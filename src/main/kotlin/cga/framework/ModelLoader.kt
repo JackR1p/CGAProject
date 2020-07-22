@@ -120,13 +120,12 @@ object ModelLoader {
             data[di++] = normal.x
             data[di++] = normal.y
             data[di++] = normal.z
-            //print(" " + di)
         }
         return data
     }
 
     private fun flattenAnimationVertexData(vertices: List<AnimationVertex>, rot: Matrix3f): ByteBuffer {
-        val data = ByteBuffer.allocateDirect((64 *  vertices.size)).order(ByteOrder.nativeOrder())
+        val data = ByteBuffer.allocateDirect((64 * vertices.size)).order(ByteOrder.nativeOrder())
         for ((position, texCoord, normal, index, weight) in vertices) {
             position.mul(rot)
             normal.mul(Matrix3f(rot).transpose().invert())
@@ -142,14 +141,10 @@ object ModelLoader {
             data.putInt(index.y)
             data.putInt(index.z)
             data.putInt(index.w)
-            //data.put(index.y.toByte())
-            //data.put(index.z.toByte())
-            //data.put(index.w.toByte())
             data.putFloat(weight.x)
             data.putFloat(weight.y)
             data.putFloat(weight.z)
             data.putFloat(weight.w)
-            //print(" " + data.position())
         }
         return data
     }
@@ -259,17 +254,6 @@ object ModelLoader {
                     ?: return null
             val meshes = ArrayList<RawAnimationMesh>()
 
-            // read Bone Hierarchy
-
-            // RootNode Pointer
-            var rNode = AINode.create(aiScene.mRootNode()!!.mChildren()!![3])
-            val boneList = mutableListOf<Bone>()
-
-            for(x in 0 until rNode.mNumChildren()){
-                val cur_Node = AINode.create(rNode.mChildren()!![x])
-                print(cur_Node.mName().dataString())
-            }
-
             // read Material
             for (m in 0 until aiScene.mNumMaterials()) {
                 val rmat = RawMaterial()
@@ -315,8 +299,13 @@ object ModelLoader {
                 val format_vwi = formatBoneData(cur_mesh)
                 for (o in 0 until cur_mesh.mNumBones()) {
                     val aibone = AIBone.create(cur_mesh.mBones()!![o])
-                    mesh.bones.add(Bone(o, aibone.mName().dataString(), aibone.mOffsetMatrix()))
+                    mesh.bones.add(Bone(o, aibone.mName().dataString(), Convert.AiToJOML(aibone.mOffsetMatrix())))
                 }
+
+                val rNode = AINode.create(aiScene.mRootNode()!!.mChildren()!![3])
+                val bones = traverseBoneTree(rNode, mutableListOf(), mesh.bones)
+
+                mesh.bones = bones
 
                 val bone_index = mutableListOf<Vector4i>()
                 val weights = mutableListOf<Vector4f>()
@@ -349,6 +338,7 @@ object ModelLoader {
                         mesh.indices.add(face.mIndices()[i])
                     }
                 }
+
                 // material index
                 mesh.materialIndex = cur_mesh.mMaterialIndex()
                 meshes.add(mesh)
@@ -411,5 +401,32 @@ object ModelLoader {
             vnum++
         }
         return format_vwi
+    }
+
+    fun traverseBoneTree(node: AINode, bonelist: MutableList<Bone>, completeBoneList: MutableList<Bone>): MutableList<Bone> {
+        var parent = Bone(0, node.mParent()!!.mName().dataString(), Matrix4f(),
+                Convert.AiToJOML(node.mParent()!!.mTransformation()), Matrix4f(), null)
+
+        for (x in 0 until completeBoneList.size) {
+            if (node.mParent()!!.mName().dataString() == completeBoneList[x].name) {
+                val par_comp = completeBoneList[x]
+                parent = Bone(par_comp.id, par_comp.name, par_comp.offset,
+                        Convert.AiToJOML(node.mParent()!!.mTransformation()), Matrix4f(), null)
+            }
+
+            if (node.mName().dataString() == completeBoneList[x].name) {
+                val node_comp = completeBoneList[x]
+                val new_node = Bone(node_comp.id, node_comp.name, node_comp.offset,
+                        Convert.AiToJOML(node.mTransformation()), Matrix4f(), parent)
+                bonelist.add(new_node)
+            }
+        }
+
+        if (node.mChildren()!!.hasRemaining()) {
+            for (x in 0 until node.mNumChildren()) {
+                traverseBoneTree(AINode.create(node.mChildren()!![x]), bonelist, completeBoneList)
+            }
+        }
+        return bonelist
     }
 }

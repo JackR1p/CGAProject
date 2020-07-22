@@ -26,8 +26,8 @@ class AnimationMesh(
 
     init {
 
-        for(x in 0 until vertices.limit()/4){
-            //print(" " + vertices.getFloat(x*4))
+        for(x in 0 until bones.size){
+            //print(" " + bones[x].parent!!.name)
         }
 
         vao = GL30.glGenVertexArrays()
