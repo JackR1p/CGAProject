@@ -240,7 +240,7 @@ object ModelLoader {
                     flattenIndexData(model.meshes[i].indices),
                     vertexAttributes,
                     materials[model.meshes[i].materialIndex],
-                    model.meshes[i].bones))
+                    model.meshes[i].rootBone))
         }
 
         // assemble the renderable
@@ -295,17 +295,21 @@ object ModelLoader {
                 val cur_mesh = AIMesh.create(aiSceneMeshes[m])
 
                 val mesh = RawAnimationMesh()
-                // Bones
+
+                // read Bones from mesh
                 val format_vwi = formatBoneData(cur_mesh)
+                val bones = mutableListOf<Bone>()
                 for (o in 0 until cur_mesh.mNumBones()) {
                     val aibone = AIBone.create(cur_mesh.mBones()!![o])
-                    mesh.bones.add(Bone(o, aibone.mName().dataString(), Convert.AiToJOML(aibone.mOffsetMatrix())))
+                    bones.add(Bone(o, aibone.mName().dataString(), mutableListOf(), Convert.AiToJOML(aibone.mOffsetMatrix())))
                 }
 
+                // read Bone Hierarchy and Matrices from AIScene
                 val rNode = AINode.create(aiScene.mRootNode()!!.mChildren()!![3])
-                val bones = traverseBoneTree(rNode, mutableListOf(), mesh.bones)
+                val rootBone = traverseBoneTree(rNode, bones)
+                mesh.rootBone = rootBone
 
-                mesh.bones = bones
+                //koutBoneTree(rootBone)
 
                 val bone_index = mutableListOf<Vector4i>()
                 val weights = mutableListOf<Vector4f>()
@@ -384,6 +388,7 @@ object ModelLoader {
         var vnum: Int = 0
         // Formatiert die VertexID-Weight-boneIndex (vwi) Liste => einer VertexID werden jeweils 4 Einträge von BoneIndex & Weight zugeordnet
         // sodass die Größe von format_vwi gleich der Größe von cur_mesh.mNumVertices ist. Diese kann dann in den VertexShader geladen werden
+        // TODO: Fehler fixen: Letzte Einträge werden wegen if statement nicht mitgenommen
         for (e in 0 until vwi.size) {
             val cur_weight = vwi[e]
             if (vwi[e].x != tmp_id.toFloat()) {
@@ -403,30 +408,86 @@ object ModelLoader {
         return format_vwi
     }
 
-    fun traverseBoneTree(node: AINode, bonelist: MutableList<Bone>, completeBoneList: MutableList<Bone>): MutableList<Bone> {
-        var parent = Bone(0, node.mParent()!!.mName().dataString(), Matrix4f(),
-                Convert.AiToJOML(node.mParent()!!.mTransformation()), Matrix4f(), null)
-
-        for (x in 0 until completeBoneList.size) {
-            if (node.mParent()!!.mName().dataString() == completeBoneList[x].name) {
-                val par_comp = completeBoneList[x]
-                parent = Bone(par_comp.id, par_comp.name, par_comp.offset,
-                        Convert.AiToJOML(node.mParent()!!.mTransformation()), Matrix4f(), null)
-            }
-
-            if (node.mName().dataString() == completeBoneList[x].name) {
-                val node_comp = completeBoneList[x]
-                val new_node = Bone(node_comp.id, node_comp.name, node_comp.offset,
-                        Convert.AiToJOML(node.mTransformation()), Matrix4f(), parent)
-                bonelist.add(new_node)
+    fun traverseBoneTree(node: AINode, complete_bonelist: MutableList<Bone>): Bone {
+        // node sollte Root Node sein
+        var cur_bone = Bone()
+        for (x in 0 until complete_bonelist.size) {
+            if (node.mName().dataString() == complete_bonelist[x].name) {
+                cur_bone = Bone(complete_bonelist[x].id, name = node.mName().dataString(), offset = complete_bonelist[x].offset,
+                        transform = Convert.AiToJOML(node.mTransformation()))
+                break
+            } else {
+                cur_bone = Bone(name = node.mName().dataString(), transform = Convert.AiToJOML(node.mTransformation()))
             }
         }
 
-        if (node.mChildren()!!.hasRemaining()) {
-            for (x in 0 until node.mNumChildren()) {
-                traverseBoneTree(AINode.create(node.mChildren()!![x]), bonelist, completeBoneList)
-            }
+        for (x in 0 until node.mNumChildren()) {
+            val cur_child = AINode.create(node.mChildren()!![x])
+            cur_bone.children.add(traverseBoneTree(cur_child, complete_bonelist))
         }
-        return bonelist
+        return cur_bone
+    }
+
+    fun koutBoneTree(node: Bone) {
+        print(" " + node.name + " NUMC:" + node.children.size + " Offset" + node.offset)
+
+        for (x in 0 until node.children.size) {
+            koutBoneTree(node.children[x])
+        }
+
+    }
+
+    fun loadAnimations(objPath: String): Array<Animation> {
+        val animationList = mutableListOf<Animation>()
+        try {
+            val aiScene = aiImportFile(objPath, aiProcess_Triangulate)!!
+
+            var curAnimation: AIAnimation
+            var curChannel: AINodeAnim
+            for (x in 0 until aiScene.mNumAnimations()) {
+                curAnimation = AIAnimation.create(aiScene.mAnimations()!![x])
+                val bone_transforms = mutableListOf<JointTransform>()
+                val animation = Animation()
+                if (curAnimation.mName().dataString() != "") {
+                    animation.name = curAnimation.mName().dataString()
+                } else {
+                    animation.name = "Animation$x"
+                }
+                animation.durotation = curAnimation.mDuration()
+                animation.ticksPerSecond = curAnimation.mTicksPerSecond()
+
+                for (y in 0 until curAnimation.mNumChannels()) {
+                    curChannel = AINodeAnim.create(curAnimation.mChannels()!![y])
+                    val curBone = curChannel.mNodeName().dataString()
+                    for (z in 0 until curChannel.mNumPositionKeys()) {
+                        val curPos = curChannel.mPositionKeys()!![z]
+                        val curRot = curChannel.mRotationKeys()!![z]
+
+                        bone_transforms.add(JointTransform(curPos.mTime(), curBone, Convert.AIToJOML(curPos.mValue()), Convert.AIToJOML(curRot.mValue())))
+                    }
+                }
+
+                bone_transforms.sortBy { it.timestamp } // size 640 jeweils 20 Einträge für einen Timestamp
+
+                val keyframes = mutableListOf<Keyframe>()
+                var jtransforms = mutableMapOf<String, JointTransform>()
+                var timestamp: Double = 0.0
+                for (y in 0 until bone_transforms.size / 20) {
+                    bone_transforms.slice((y * 20) until (y + 1) * 20).forEach {
+                        jtransforms[it.node] = it
+                        timestamp = it.timestamp
+                    }
+                    keyframes.add(Keyframe(timestamp, jtransforms))
+                    jtransforms = mutableMapOf()
+                }
+                animation.keyframes = keyframes
+                //animation.keyframes.forEach { it.transformations.forEach { x -> print(" " + x.key + " " + x.value.timestamp)} }
+                animationList.add(animation)
+            }
+
+        } catch (e: java.lang.Exception) {
+            print("Error Loading Animation" + e.message)
+        }
+        return animationList.toTypedArray()
     }
 }

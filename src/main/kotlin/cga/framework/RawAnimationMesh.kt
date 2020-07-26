@@ -7,7 +7,7 @@ class RawAnimationMesh(
         var bone_indices : MutableList<Vector4i> = mutableListOf(),
         var indices: MutableList<Int> = mutableListOf(),
         var materialIndex: Int = 0,
-        var bones: MutableList<Bone> = mutableListOf()
+        var rootBone : Bone = Bone()
 )
 {
 }

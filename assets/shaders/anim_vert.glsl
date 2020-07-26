@@ -4,8 +4,13 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 tc;
 layout(location = 2) in vec3 normal;
+layout(location = 3) in ivec4 bone_index;
+layout(location = 4) in vec4 weight;
 
 //uniforms
+
+// Animation
+uniform mat4 Bones[22];
 
 // translation object to world
 uniform mat4 model_matrix;
@@ -52,17 +57,23 @@ void main(){
     mmatrix = model_matrix;
     view_matrix = view;
 
+    // Animation
+    mat4 boneTransform = Bones[bone_index.x] * weight.x;
+    boneTransform += Bones[bone_index.y] * weight.y;
+    boneTransform += Bones[bone_index.z] * weight.z;
+    boneTransform += Bones[bone_index.w] * weight.w;
+
     // Texture Coordinates
     vertexData.tc = tc * tcMultiplier;
 
     // Transformations
-    vec4 pos = model_matrix * vec4(position, 1.0f);
+    vec4 pos = model_matrix * boneTransform * vec4(position, 1.0f);
 
     // model view
     mat4 mv_mat = view * model_matrix;
 
     // Normal in Camera Perspective Transformation
-    vertexData.normal = (inverse(transpose(mv_mat)) * vec4(normal, 1.0f)).xyz;
+    vertexData.normal = (inverse(transpose(mv_mat)) * boneTransform * vec4(normal, 1.0f)).xyz;
 
     vertexData.position = pos.xyz;
 

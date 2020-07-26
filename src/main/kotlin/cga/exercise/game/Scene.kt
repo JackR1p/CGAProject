@@ -20,7 +20,9 @@ import kotlin.math.sin
  * Created by Fabian on 16.09.2017.
  */
 class Scene(private val window: GameWindow) {
+    // TODO: Set static Variable for LightsourceCount or BoneCount
     private val shader: ShaderProgram = ShaderProgram("assets/shaders/tron_vert.glsl", "assets/shaders/tron_frag.glsl")
+    private val anim_shader : ShaderProgram = ShaderProgram("assets/shaders/anim_vert.glsl", "assets/shaders/tron_frag.glsl")
 
     // Models
     var rend_ground: Renderable
@@ -53,9 +55,16 @@ class Scene(private val window: GameWindow) {
                 Math.toRadians(-90.0).toFloat(), Math.toRadians(90.0).toFloat(), 0f)!!
         playermodel.scaleLocal(Vector3f(0.8f, 0.8f, 0.8f))
 
+        // Model muss selbes Rig benutzen wie das loadModel Object
+        val humanAnimations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/Walking.dae")
+
         human = ModelLoader.loadDAEModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/human.dae", 0f, 0f, 0f)
         human.scaleLocal(Vector3f(0.2f,0.2f,0.2f))
         human.translateGlobal(Vector3f(0f,2.85f,0f))
+
+        human.animations = humanAnimations
+
+
 
         // Material
 
@@ -105,6 +114,7 @@ class Scene(private val window: GameWindow) {
         glDepthFunc(GL_LESS); GLError.checkThrow()
     }
 
+    // TODO:Automatisierung der Rendercalls von Objekten (Liste?)
     fun render(dt: Float, t: Float) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         shader.use()
@@ -113,8 +123,9 @@ class Scene(private val window: GameWindow) {
         shader.setUniform("emitcolor", Vector3f(0f, 0.75f + sin(t * 2.0).toFloat() / 6, 0.75f + cos(t * 2.0).toFloat() / 6))
         troncam.bind(shader)
         //playermodel.render(shader)
-        human.render(shader)
         rend_ground.render(shader)
+        anim_shader.use()
+        human.render(anim_shader)
     }
 
     fun update(dt: Float, t: Float) {

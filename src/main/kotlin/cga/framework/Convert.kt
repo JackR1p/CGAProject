@@ -1,7 +1,11 @@
 package cga.framework
 
 import org.joml.Matrix4f
+import org.joml.Quaternionf
+import org.joml.Vector3f
 import org.lwjgl.assimp.AIMatrix4x4
+import org.lwjgl.assimp.AIQuaternion
+import org.lwjgl.assimp.AIVector3D
 
 object Convert {
 
@@ -23,6 +27,23 @@ object Convert {
         res.m31(aimat.b2())
         res.m32(aimat.b3())
         res.m33(aimat.b4())
+        return res
+    }
+
+    fun AIToJOML(aivec : AIVector3D) : Vector3f {
+        val res = Vector3f()
+        res.x = aivec.x()
+        res.y = aivec.y()
+        res.z = aivec.z()
+        return res;
+    }
+
+    fun AIToJOML(aiquat : AIQuaternion): Quaternionf {
+        val res = Quaternionf()
+        res.x = aiquat.x()
+        res.y = aiquat.y()
+        res.z = aiquat.z()
+        res.w = aiquat.w()
         return res
     }
 }

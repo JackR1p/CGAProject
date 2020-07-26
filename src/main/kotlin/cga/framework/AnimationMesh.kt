@@ -17,7 +17,7 @@ class AnimationMesh(
         indices: IntArray,
         attributes: Array<VertexAttribute>,
         var material: Material? = null,
-        var bones: MutableList<Bone>
+        var rootBone : Bone = Bone()
 ) {
     private var vao = 0
     private var vbo = 0
@@ -25,10 +25,6 @@ class AnimationMesh(
     private var indexcount : Int
 
     init {
-
-        for(x in 0 until bones.size){
-            //print(" " + bones[x].parent!!.name)
-        }
 
         vao = GL30.glGenVertexArrays()
         vbo = GL15.glGenBuffers()
