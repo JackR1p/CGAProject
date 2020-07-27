@@ -319,6 +319,7 @@ object ModelLoader {
                         weights.add(Vector4f(format_vwi[e - 3].z, format_vwi[e - 2].z, format_vwi[e - 1].z, format_vwi[e].z))
                     }
                 }
+
                 // ------
                 for (v in 0 until cur_mesh.mNumVertices()) {
                     val aiVert = cur_mesh.mVertices()[v]
@@ -388,7 +389,6 @@ object ModelLoader {
         var vnum: Int = 0
         // Formatiert die VertexID-Weight-boneIndex (vwi) Liste => einer VertexID werden jeweils 4 Einträge von BoneIndex & Weight zugeordnet
         // sodass die Größe von format_vwi gleich der Größe von cur_mesh.mNumVertices ist. Diese kann dann in den VertexShader geladen werden
-        // TODO: Fehler fixen: Letzte Einträge werden wegen if statement nicht mitgenommen
         for (e in 0 until vwi.size) {
             val cur_weight = vwi[e]
             if (vwi[e].x != tmp_id.toFloat()) {

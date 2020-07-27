@@ -8,7 +8,7 @@ class Animation(
         delta : Double = 0.0
 )
 {
-    fun play(){
+    fun play(rootBone: Bone){
 
     }
 }

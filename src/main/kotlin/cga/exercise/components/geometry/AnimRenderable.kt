@@ -27,7 +27,7 @@ class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), matrix: Matrix4
     fun playAnimation(name: String) {
         animations.forEach {
             if (it.name == name) {
-                it.play()
+                it.play(meshes[0].rootBone)
             }
         }
     }
