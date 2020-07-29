@@ -91,7 +91,7 @@ object ModelLoader {
             while (!nodeQueue.isEmpty()) {
                 val node = nodeQueue.poll()
                 for (m in 0 until node.mNumMeshes()) {
-                    var sceneMeshes = node.mMeshes() ?: return null
+                    val sceneMeshes = node.mMeshes() ?: return null
                     rm.meshes.add(meshes[sceneMeshes[m]])
                 }
                 for (c in 0 until node.mNumChildren()) {
@@ -437,8 +437,8 @@ object ModelLoader {
 
     }
 
-    fun loadAnimations(objPath: String): Array<Animation> {
-        val animationList = mutableListOf<Animation>()
+    fun loadAnimations(objPath: String): Map<String, Animation> {
+        val animationMap = mutableMapOf<String, Animation>()
         try {
             val aiScene = aiImportFile(objPath, aiProcess_Triangulate)!!
 
@@ -482,12 +482,12 @@ object ModelLoader {
                 }
                 animation.keyframes = keyframes
                 //animation.keyframes.forEach { it.transformations.forEach { x -> print(" " + x.key + " " + x.value.timestamp)} }
-                animationList.add(animation)
+                animationMap[animation.name] = animation
             }
 
         } catch (e: java.lang.Exception) {
             print("Error Loading Animation" + e.message)
         }
-        return animationList.toTypedArray()
+        return animationMap
     }
 }

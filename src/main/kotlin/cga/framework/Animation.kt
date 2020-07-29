@@ -1,14 +1,14 @@
 package cga.framework
 
-class Animation(
-        var name : String = "",
-        var durotation : Double = 0.0,
-        var ticksPerSecond : Double = 0.0,
-        var keyframes : MutableList<Keyframe> = mutableListOf(),
-        delta : Double = 0.0
-)
-{
-    fun play(rootBone: Bone){
+import cga.exercise.components.shader.ShaderProgram
+import org.joml.Matrix4f
 
-    }
+class Animation(
+        var name: String = "",
+        var durotation: Double = 0.0,
+        var ticksPerSecond: Double = 0.0,
+        var keyframes: MutableList<Keyframe> = mutableListOf(),
+        var time: Double = 0.0
+) {
+
 }

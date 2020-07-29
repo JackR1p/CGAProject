@@ -22,13 +22,13 @@ import kotlin.math.sin
 class Scene(private val window: GameWindow) {
     // TODO: Set static Variable for LightsourceCount or BoneCount
     private val shader: ShaderProgram = ShaderProgram("assets/shaders/tron_vert.glsl", "assets/shaders/tron_frag.glsl")
-    private val anim_shader : ShaderProgram = ShaderProgram("assets/shaders/anim_vert.glsl", "assets/shaders/tron_frag.glsl")
+    private val anim_shader: ShaderProgram = ShaderProgram("assets/shaders/anim_vert.glsl", "assets/shaders/tron_frag.glsl")
 
     // Models
     var rend_ground: Renderable
     var troncam: Camera
     var playermodel: Renderable
-    var human : AnimRenderable
+    var human: AnimRenderable
 
     // Lights
     var pL_1: PointLight
@@ -56,15 +56,16 @@ class Scene(private val window: GameWindow) {
         playermodel.scaleLocal(Vector3f(0.8f, 0.8f, 0.8f))
 
         // Model muss selbes Rig benutzen wie das loadModel Object
-        val humanAnimations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/Walking.dae")
-
         human = ModelLoader.loadDAEModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/human.dae", 0f, 0f, 0f)
-        human.scaleLocal(Vector3f(0.2f,0.2f,0.2f))
-        human.translateGlobal(Vector3f(0f,2.85f,0f))
+        human.scaleLocal(Vector3f(0.2f, 0.2f, 0.2f))
+        human.translateGlobal(Vector3f(0f, 2.85f, 0f))
+        human.shader = anim_shader
 
-        human.animations = humanAnimations
+        val human_animator = Animator()
+        human_animator.animations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/Walking.dae")
+        human_animator.model = human
 
-
+        human.animator = human_animator
 
         // Material
 
@@ -129,6 +130,7 @@ class Scene(private val window: GameWindow) {
     }
 
     fun update(dt: Float, t: Float) {
+        human.update(window, dt)
 
         if (window.getKeyState(GLFW.GLFW_KEY_W)) {
             playermodel.translateLocal(Vector3f(0f, 0f, -0.1f))

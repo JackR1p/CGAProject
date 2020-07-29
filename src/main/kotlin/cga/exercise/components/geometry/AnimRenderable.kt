@@ -1,15 +1,15 @@
 package cga.exercise.components.geometry
 
 import cga.exercise.components.shader.ShaderProgram
-import cga.framework.Animation
-import cga.framework.AnimationMesh
-import cga.framework.Bone
+import cga.framework.*
 import org.joml.Matrix4f
+import org.lwjgl.glfw.GLFW
 
 // Mesh => Vertices, Polygone usw.
-class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), matrix: Matrix4f = Matrix4f(),
+class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: ShaderProgram? = null, matrix: Matrix4f = Matrix4f(),
                      parent: Transformable? = null,
-                     var animations: Array<Animation> = arrayOf()) : IRenderable, Transformable(matrix, parent) {
+                     var animator: Animator? = null
+) : IRenderable, Transformable(matrix, parent) {
 
 
     override fun render(shaderProgram: ShaderProgram) {
@@ -20,15 +20,9 @@ class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), matrix: Matrix4
     }
 
     // Verhalten des AnimRenderables zur Laufzeit
-    fun update() {
-
-    }
-
-    fun playAnimation(name: String) {
-        animations.forEach {
-            if (it.name == name) {
-                it.play(meshes[0].rootBone)
-            }
+    fun update(window: GameWindow, dt: Float) {
+        if (window.getKeyState(GLFW.GLFW_KEY_W)) {
+            animator!!.playAnimation("Animation0", dt)
         }
     }
 }
