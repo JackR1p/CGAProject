@@ -1,5 +1,6 @@
 #version 330 core
 #define LIGHTS_NUM 2
+#define BONE_NUM 22
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 tc;
@@ -10,7 +11,7 @@ layout(location = 4) in vec4 weight;
 //uniforms
 
 // Animation
-uniform mat4 Bones[22];
+uniform mat4 Bones[BONE_NUM];
 
 // translation object to world
 uniform mat4 model_matrix;
@@ -41,8 +42,6 @@ out struct Light {
     vec3 spot_dir;
 };
 
-
-
 uniform Light Lights[LIGHTS_NUM];
 
 out Light lights[LIGHTS_NUM];
@@ -51,7 +50,6 @@ out mat4 mmatrix;
 out mat4 view_matrix;
 
 void main(){
-
     lights = Lights;
 
     mmatrix = model_matrix;
@@ -67,12 +65,14 @@ void main(){
     vertexData.tc = tc * tcMultiplier;
 
     // Transformations
+    // nbonetransform
     vec4 pos = model_matrix * boneTransform * vec4(position, 1.0f);
 
     // model view
     mat4 mv_mat = view * model_matrix;
 
     // Normal in Camera Perspective Transformation
+    // needbonetransform
     vertexData.normal = (inverse(transpose(mv_mat)) * boneTransform * vec4(normal, 1.0f)).xyz;
 
     vertexData.position = pos.xyz;

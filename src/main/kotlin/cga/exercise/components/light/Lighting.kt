@@ -64,7 +64,7 @@ class Lighting {
             shader.setUniform("Lights[$i].q_att", x.quadraticAttenuation)
             shader.setUniform("Lights[$i].inner", cos(Math.toRadians(x.innerConeAngle.toDouble())).toFloat())
             shader.setUniform("Lights[$i].outer", cos(Math.toRadians(x.outerConeAngle.toDouble())).toFloat())
-            shader.setUniform("Lights[$i].spot_dir", x.parent!!.getZAxis().negate())
+            shader.setUniform("Lights[$i].spot_dir", x.parent!!.getZAxis())
             i++
         }
 

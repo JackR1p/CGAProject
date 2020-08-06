@@ -8,6 +8,7 @@ import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 import org.lwjgl.assimp.Assimp.*
 import org.lwjgl.opengl.GL11
+import java.lang.Error
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.IntBuffer
@@ -201,173 +202,174 @@ object ModelLoader {
         return Renderable(meshes)
     }
 
-    fun loadDAEModel(objPath: String, pitch: Float, yaw: Float, roll: Float): AnimRenderable {
-        val model = loadDAE(objPath)!!
-        val textures = ArrayList<Texture2D>()
-        val materials = ArrayList<Material>()
+    fun loadDAEModel(objPath: String, pitch: Float = 0f, yaw: Float = 0f, roll: Float = 0f): AnimRenderable {
         val meshes = ArrayList<AnimationMesh>()
-        val stride = 16 * 4
-        val atr1 = VertexAttribute(3, GL11.GL_FLOAT, stride, 0)
-        val atr2 = VertexAttribute(2, GL11.GL_FLOAT, stride, 3 * 4)
-        val atr3 = VertexAttribute(3, GL11.GL_FLOAT, stride, 5 * 4)
-        val atr4 = VertexAttribute(4, GL11.GL_UNSIGNED_INT, stride, 8 * 4)
-        val atr5 = VertexAttribute(4, GL11.GL_FLOAT, stride, 12 * 4)
-        val vertexAttributes = arrayOf(atr1, atr2, atr3, atr4, atr5)
+        try {
+            val model = loadDAE(objPath)!!
+            val textures = ArrayList<Texture2D>()
+            val materials = ArrayList<Material>()
+            val stride = 16 * 4
+            val atr1 = VertexAttribute(3, GL11.GL_FLOAT, stride, 0)
+            val atr2 = VertexAttribute(2, GL11.GL_FLOAT, stride, 3 * 4)
+            val atr3 = VertexAttribute(3, GL11.GL_FLOAT, stride, 5 * 4)
+            val atr4 = VertexAttribute(4, GL11.GL_UNSIGNED_INT, stride, 8 * 4)
+            val atr5 = VertexAttribute(4, GL11.GL_FLOAT, stride, 12 * 4)
+            val vertexAttributes = arrayOf(atr1, atr2, atr3, atr4, atr5)
 
-        val rot = Matrix3f().rotateZ(roll).rotateY(yaw).rotateX(pitch)
+            val rot = Matrix3f().rotateZ(roll).rotateY(yaw).rotateX(pitch)
 
-        val ddata = BufferUtils.createByteBuffer(4)
-        ddata.put(0.toByte()).put(0.toByte()).put(0.toByte()).put(0.toByte())
-        ddata.flip()
-        for (i in model.textures.indices) {
-            if (model.textures[i].isEmpty()) {
-                textures.add(Texture2D(ddata, 1, 1, true))
-            } else {
-                textures.add(Texture2D(objPath.substring(0, objPath.lastIndexOf('/') + 1) + model.textures[i], true))
+            val ddata = BufferUtils.createByteBuffer(4)
+            ddata.put(0.toByte()).put(0.toByte()).put(0.toByte()).put(0.toByte())
+            ddata.flip()
+            for (i in model.textures.indices) {
+                if (model.textures[i].isEmpty()) {
+                    textures.add(Texture2D(ddata, 1, 1, true))
+                } else {
+                    textures.add(Texture2D(objPath.substring(0, objPath.lastIndexOf('/') + 1) + model.textures[i], true))
+                }
             }
+            // materials
+            for (i in model.materials.indices) {
+                materials.add(Material(textures[model.materials[i].diffTexIndex],
+                        textures[model.materials[i].emitTexIndex],
+                        textures[model.materials[i].specTexIndex],
+                        model.materials[i].shininess,
+                        Vector2f(1.0f, 1.0f)))
+            }
+            // meshes
+            for (i in model.meshes.indices) {
+                meshes.add(AnimationMesh(flattenAnimationVertexData(model.meshes[i].vertices, rot),
+                        flattenIndexData(model.meshes[i].indices),
+                        vertexAttributes,
+                        materials[model.meshes[i].materialIndex],
+                        model.meshes[i].rootBone))
+            }
+        } catch (e: Error) {
+            print(e.message)
         }
-        // materials
-        for (i in model.materials.indices) {
-            materials.add(Material(textures[model.materials[i].diffTexIndex],
-                    textures[model.materials[i].emitTexIndex],
-                    textures[model.materials[i].specTexIndex],
-                    model.materials[i].shininess,
-                    Vector2f(1.0f, 1.0f)))
-        }
-        // meshes
-        for (i in model.meshes.indices) {
-            meshes.add(AnimationMesh(flattenAnimationVertexData(model.meshes[i].vertices, rot),
-                    flattenIndexData(model.meshes[i].indices),
-                    vertexAttributes,
-                    materials[model.meshes[i].materialIndex],
-                    model.meshes[i].rootBone))
-        }
-
         // assemble the renderable
         return AnimRenderable(meshes)
     }
 
     fun loadDAE(objPath: String): RawAnimationModel? {
         val rm = RawAnimationModel()
-        try {
-            val aiScene = aiImportFile(objPath, aiProcess_Triangulate)
-                    ?: return null
-            val meshes = ArrayList<RawAnimationMesh>()
-
-            // read Material
-            for (m in 0 until aiScene.mNumMaterials()) {
-                val rmat = RawMaterial()
-                val tpath = AIString.calloc()
-                val sceneMat = aiScene.mMaterials() ?: return null
-                val mat = AIMaterial.create(sceneMat[m])
-                Assimp.aiGetMaterialTexture(mat, Assimp.aiTextureType_DIFFUSE, 0, tpath, null as IntBuffer?, null, null, null, null, null)
-                // diffuse texture
-                var tpathj = tpath.dataString()
-                if (rm.textures.contains(tpathj)) rmat.diffTexIndex = rm.textures.indexOf(tpathj) else {
-                    rm.textures.add(tpathj)
-                    rmat.diffTexIndex = rm.textures.size - 1
-                }
-                // specular texture
-                Assimp.aiGetMaterialTexture(mat, Assimp.aiTextureType_SPECULAR, 0, tpath, null as IntBuffer?, null, null, null, null, null)
-                tpathj = tpath.dataString()
-                if (rm.textures.contains(tpathj)) rmat.specTexIndex = rm.textures.indexOf(tpathj) else {
-                    rm.textures.add(tpathj)
-                    rmat.specTexIndex = rm.textures.size - 1
-                }
-                // emissive texture
-                Assimp.aiGetMaterialTexture(mat, Assimp.aiTextureType_EMISSIVE, 0, tpath, null as IntBuffer?, null, null, null, null, null)
-                tpathj = tpath.dataString()
-                if (rm.textures.contains(tpathj)) rmat.emitTexIndex = rm.textures.indexOf(tpathj) else {
-                    rm.textures.add(tpathj)
-                    rmat.emitTexIndex = rm.textures.size - 1
-                }
-                // shininess
-                val sptr = PointerBuffer.allocateDirect(1)
-                Assimp.aiGetMaterialProperty(mat, Assimp.AI_MATKEY_SHININESS, sptr)
-                val sprop = AIMaterialProperty.create(sptr[0])
-                rmat.shininess = sprop.mData().getFloat(0)
-                rm.materials.add(rmat)
+        val aiScene = aiImportFile(objPath, aiProcess_Triangulate)!!
+        val meshes = ArrayList<RawAnimationMesh>()
+        // read Material
+        for (m in 0 until aiScene.mNumMaterials()) {
+            val rmat = RawMaterial()
+            val tpath = AIString.calloc()
+            val sceneMat = aiScene.mMaterials() ?: return null
+            val mat = AIMaterial.create(sceneMat[m])
+            Assimp.aiGetMaterialTexture(mat, Assimp.aiTextureType_DIFFUSE, 0, tpath, null as IntBuffer?, null, null, null, null, null)
+            // diffuse texture
+            var tpathj = tpath.dataString()
+            if (rm.textures.contains(tpathj)) rmat.diffTexIndex = rm.textures.indexOf(tpathj) else {
+                rm.textures.add(tpathj)
+                rmat.diffTexIndex = rm.textures.size - 1
             }
-
-            // read meshes
-            for (m in 0 until aiScene.mNumMeshes()) {
-                val aiSceneMeshes = aiScene.mMeshes()!!
-                val cur_mesh = AIMesh.create(aiSceneMeshes[m])
-
-                val mesh = RawAnimationMesh()
-
-                // read Bones from mesh
-                val format_vwi = formatBoneData(cur_mesh)
-                val bones = mutableListOf<Bone>()
-                for (o in 0 until cur_mesh.mNumBones()) {
-                    val aibone = AIBone.create(cur_mesh.mBones()!![o])
-                    bones.add(Bone(o, aibone.mName().dataString(), mutableListOf(), Convert.AiToJOML(aibone.mOffsetMatrix())))
-                }
-
-                // read Bone Hierarchy and Matrices from AIScene
-                val rNode = AINode.create(aiScene.mRootNode()!!.mChildren()!![3])
-                val rootBone = traverseBoneTree(rNode, bones)
-                mesh.rootBone = rootBone
-
-                //koutBoneTree(rootBone)
-
-                val bone_index = mutableListOf<Vector4i>()
-                val weights = mutableListOf<Vector4f>()
-                for (e in 0 until format_vwi.size) {
-                    if (((e + 1) % 4) == 0) {
-                        bone_index.add(Vector4i(format_vwi[e - 3].y.toInt(), format_vwi[e - 2].y.toInt(), format_vwi[e - 1].y.toInt(), format_vwi[e].y.toInt()))
-                        weights.add(Vector4f(format_vwi[e - 3].z, format_vwi[e - 2].z, format_vwi[e - 1].z, format_vwi[e].z))
-                    }
-                }
-
-                // ------
-                for (v in 0 until cur_mesh.mNumVertices()) {
-                    val aiVert = cur_mesh.mVertices()[v]
-                    val aiNorm = cur_mesh.mNormals()!![v]
-                    val sceneTextureCoords = cur_mesh.mTextureCoords(0)!!
-                    val aiTexCoord = if (cur_mesh.mNumUVComponents(0) > 0) sceneTextureCoords[v] else null
-
-                    val vert = AnimationVertex()
-
-                    vert.position = Vector3f(aiVert.x(), aiVert.y(), aiVert.z())
-                    vert.normal = Vector3f(aiNorm.x(), aiNorm.y(), aiNorm.z())
-                    vert.texCoord = if (aiTexCoord != null) Vector2f(aiTexCoord.x(), aiTexCoord.y()) else Vector2f()
-                    vert.index = bone_index[v]
-                    vert.weight = weights[v]
-                    mesh.vertices.add(vert)
-                }
-
-                for (f in 0 until cur_mesh.mNumFaces()) {
-                    val face = cur_mesh.mFaces()[f]
-                    for (i in 0 until face.mNumIndices()) {
-                        mesh.indices.add(face.mIndices()[i])
-                    }
-                }
-
-                // material index
-                mesh.materialIndex = cur_mesh.mMaterialIndex()
-                meshes.add(mesh)
+            // specular texture
+            Assimp.aiGetMaterialTexture(mat, Assimp.aiTextureType_SPECULAR, 0, tpath, null as IntBuffer?, null, null, null, null, null)
+            tpathj = tpath.dataString()
+            if (rm.textures.contains(tpathj)) rmat.specTexIndex = rm.textures.indexOf(tpathj) else {
+                rm.textures.add(tpathj)
+                rmat.specTexIndex = rm.textures.size - 1
             }
-
-            // traverse assimp scene graph
-            val nodeQueue: Queue<AINode> = LinkedList()
-            nodeQueue.offer(aiScene.mRootNode())
-            while (!nodeQueue.isEmpty()) {
-                val node = nodeQueue.poll()
-                for (m in 0 until node.mNumMeshes()) {
-                    val sceneMeshes = node.mMeshes() ?: return null
-                    rm.meshes.add(meshes[sceneMeshes[m]])
-                }
-                for (c in 0 until node.mNumChildren()) {
-                    val sceneChildren = node.mChildren() ?: return null
-                    val cnode = AINode.create(sceneChildren[c])
-                    nodeQueue.offer(cnode)
-                }
+            // emissive texture
+            Assimp.aiGetMaterialTexture(mat, Assimp.aiTextureType_EMISSIVE, 0, tpath, null as IntBuffer?, null, null, null, null, null)
+            tpathj = tpath.dataString()
+            if (rm.textures.contains(tpathj)) rmat.emitTexIndex = rm.textures.indexOf(tpathj) else {
+                rm.textures.add(tpathj)
+                rmat.emitTexIndex = rm.textures.size - 1
             }
-
-        } catch (e: java.lang.Exception) {
-            print("Failed to load Animation Mesh: $e")
+            // shininess
+            val sptr = PointerBuffer.allocateDirect(1)
+            Assimp.aiGetMaterialProperty(mat, Assimp.AI_MATKEY_SHININESS, sptr)
+            val sprop = AIMaterialProperty.create(sptr[0])
+            rmat.shininess = sprop.mData().getFloat(0)
+            rm.materials.add(rmat)
         }
+
+        // read meshes
+        for (m in 0 until aiScene.mNumMeshes()) {
+            val aiSceneMeshes = aiScene.mMeshes()!!
+            val cur_mesh = AIMesh.create(aiSceneMeshes[m])
+
+            val mesh = RawAnimationMesh()
+
+            // read Bones from mesh
+            val format_vwi = formatBoneData(cur_mesh)
+            val bones = mutableListOf<Bone>()
+            for (o in 0 until cur_mesh.mNumBones()) {
+                val aibone = AIBone.create(cur_mesh.mBones()!![o])
+                bones.add(Bone(o, aibone.mName().dataString(), mutableListOf(), Convert.AiToJOML(aibone.mOffsetMatrix())))
+            }
+
+            var model_string = bones[0].name.split("_")[0]
+
+            // Root Bone darf nicht von Maya-QuickRig sein
+            val result = mutableListOf<AINode>()
+            model_string = "Hips"
+            getRootBone(aiScene.mRootNode()!!, model_string, bones.map { it.name }, result)
+            val rootBone = traverseBoneTree(result[0], bones)!!
+            //koutBoneTree(rootBone)
+            mesh.rootBone = rootBone
+
+            val bone_index = mutableListOf<Vector4i>()
+            val weights = mutableListOf<Vector4f>()
+            for (e in 0 until format_vwi.size) {
+                if (((e + 1) % 4) == 0) {
+                    bone_index.add(Vector4i(format_vwi[e - 3].y.toInt(), format_vwi[e - 2].y.toInt(), format_vwi[e - 1].y.toInt(), format_vwi[e].y.toInt()))
+                    weights.add(Vector4f(format_vwi[e - 3].z, format_vwi[e - 2].z, format_vwi[e - 1].z, format_vwi[e].z))
+                }
+            }
+
+            // ------
+            for (v in 0 until cur_mesh.mNumVertices() - 1) {
+                val aiVert = cur_mesh.mVertices()[v]
+                val aiNorm = cur_mesh.mNormals()!![v]
+                val sceneTextureCoords = cur_mesh.mTextureCoords(0)!!
+                val aiTexCoord = if (cur_mesh.mNumUVComponents(0) > 0) sceneTextureCoords[v] else null
+
+                val vert = AnimationVertex()
+
+                vert.position = Vector3f(aiVert.x(), aiVert.y(), aiVert.z())
+                vert.normal = Vector3f(aiNorm.x(), aiNorm.y(), aiNorm.z()).normalize()
+                vert.texCoord = if (aiTexCoord != null) Vector2f(aiTexCoord.x(), aiTexCoord.y()) else Vector2f()
+                vert.index = bone_index[v]
+                vert.weight = weights[v].normalize()
+                mesh.vertices.add(vert)
+            }
+
+            for (f in 0 until cur_mesh.mNumFaces()) {
+                val face = cur_mesh.mFaces()[f]
+                for (i in 0 until face.mNumIndices()) {
+                    mesh.indices.add(face.mIndices()[i])
+                }
+            }
+
+            // material index
+            mesh.materialIndex = cur_mesh.mMaterialIndex()
+            meshes.add(mesh)
+        }
+
+        // traverse assimp scene graph
+        val nodeQueue: Queue<AINode> = LinkedList()
+        nodeQueue.offer(aiScene.mRootNode())
+        while (!nodeQueue.isEmpty()) {
+            val node = nodeQueue.poll()
+            for (m in 0 until node.mNumMeshes()) {
+                val sceneMeshes = node.mMeshes() ?: return null
+                rm.meshes.add(meshes[sceneMeshes[m]])
+            }
+            for (c in 0 until node.mNumChildren()) {
+                val sceneChildren = node.mChildren() ?: return null
+                val cnode = AINode.create(sceneChildren[c])
+                nodeQueue.offer(cnode)
+            }
+        }
+
+
         return rm
     }
 
@@ -408,22 +410,27 @@ object ModelLoader {
         return format_vwi
     }
 
-    fun traverseBoneTree(node: AINode, complete_bonelist: MutableList<Bone>): Bone {
+    fun traverseBoneTree(node: AINode, complete_bonelist: MutableList<Bone>): Bone? {
         // node sollte Root Node sein
-        var cur_bone = Bone()
+        var cur_bone: Bone? = Bone()
         for (x in 0 until complete_bonelist.size) {
+
             if (node.mName().dataString() == complete_bonelist[x].name) {
+                val mTransform = Convert.AiToJOML(node.mTransformation())
                 cur_bone = Bone(complete_bonelist[x].id, name = node.mName().dataString(), offset = complete_bonelist[x].offset,
-                        transform = Convert.AiToJOML(node.mTransformation()))
+                        transform = mTransform)
                 break
             } else {
-                cur_bone = Bone(name = node.mName().dataString(), transform = Convert.AiToJOML(node.mTransformation()))
+                cur_bone = null
             }
         }
 
         for (x in 0 until node.mNumChildren()) {
             val cur_child = AINode.create(node.mChildren()!![x])
-            cur_bone.children.add(traverseBoneTree(cur_child, complete_bonelist))
+            val rec = traverseBoneTree(cur_child, complete_bonelist)
+            if (rec != null) {
+                cur_bone!!.children.add(rec)
+            }
         }
         return cur_bone
     }
@@ -456,24 +463,33 @@ object ModelLoader {
                 animation.durotation = curAnimation.mDuration()
                 animation.ticksPerSecond = curAnimation.mTicksPerSecond()
 
+                // Sammelt alle Transformation in einer Liste; Jeweils mNumChannels (Anzahl der Bones) Einträge existieren für einen Timestamp
+                //
+                // Eine Animation hat für jeden Bone einen Channel an Transformations zu jedem Timestamp (geordnet)
+                val channel_offset = curAnimation.mNumChannels()
+
                 for (y in 0 until curAnimation.mNumChannels()) {
                     curChannel = AINodeAnim.create(curAnimation.mChannels()!![y])
                     val curBone = curChannel.mNodeName().dataString()
+                    // Ein Channel hat so viele Einträge wie Timestamps; curPos und CurRot an der selben Position haben auch
+                    // den selben Timestamp
                     for (z in 0 until curChannel.mNumPositionKeys()) {
                         val curPos = curChannel.mPositionKeys()!![z]
                         val curRot = curChannel.mRotationKeys()!![z]
-
                         bone_transforms.add(JointTransform(curPos.mTime(), curBone, Convert.AIToJOML(curPos.mValue()), Convert.AIToJOML(curRot.mValue())))
                     }
                 }
 
-                bone_transforms.sortBy { it.timestamp } // size 640 jeweils 20 Einträge für einen Timestamp
+                bone_transforms.sortBy { it.timestamp }
 
+                // Sammelt alle Transformations als JointTransformation eines Timestamps in einer Liste und übergibt sie einem Keyframe
+                // mit entsprechenden Timestamp
+                // Die Keyframes werden einer Liste beigefügt und an die Animation übergeben
                 val keyframes = mutableListOf<Keyframe>()
                 var jtransforms = mutableMapOf<String, JointTransform>()
-                var timestamp: Double = 0.0
-                for (y in 0 until bone_transforms.size / 20) {
-                    bone_transforms.slice((y * 20) until (y + 1) * 20).forEach {
+                var timestamp = 0.0
+                for (y in 0 until bone_transforms.size / channel_offset) {
+                    bone_transforms.slice((y * channel_offset) until (y + 1) * channel_offset).forEach {
                         jtransforms[it.node] = it
                         timestamp = it.timestamp
                     }
@@ -481,13 +497,29 @@ object ModelLoader {
                     jtransforms = mutableMapOf()
                 }
                 animation.keyframes = keyframes
-                //animation.keyframes.forEach { it.transformations.forEach { x -> print(" " + x.key + " " + x.value.timestamp)} }
+                //animation.keyframes.forEach { print(" Timestamp: " + it.timestamp); it.transformations.forEach { t -> print(" Bone: " + t.key + " Transform:" + t.value.position) } }
                 animationMap[animation.name] = animation
             }
 
         } catch (e: java.lang.Exception) {
-            print("Error Loading Animation" + e.message)
+            print("Error Loading Animation " + e.message)
         }
         return animationMap
+    }
+
+    fun getRootBone(node: AINode, model_string: String, bones: List<String>, res: MutableList<AINode>) {
+
+        if (node.mParent() != null) {
+            if (model_string !in node.mParent()!!.mName().dataString() && model_string in node.mName().dataString()
+                    && node.mName().dataString() in bones) {
+                res.add(node)
+                return
+            }
+        }
+
+        for (i in 0 until node.mNumChildren()) {
+            val aiNode = AINode.create(node.mChildren()!![i])
+            getRootBone(aiNode, model_string, bones, res)
+        }
     }
 }

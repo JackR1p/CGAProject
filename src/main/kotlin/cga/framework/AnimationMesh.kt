@@ -3,6 +3,7 @@ package cga.framework
 import cga.exercise.components.geometry.Material
 import cga.exercise.components.geometry.VertexAttribute
 import cga.exercise.components.shader.ShaderProgram
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL15.*
@@ -62,7 +63,15 @@ class AnimationMesh(
 
     fun render(shaderProgram: ShaderProgram){
         material?.bind(shaderProgram)
+        bindBones(rootBone, shaderProgram)
         render()
+    }
+
+    private fun bindBones(root : Bone, shaderProgram: ShaderProgram){
+        shaderProgram.setUniform("Bones[${root.id}]", false, root.animateMatrix)
+        for(i in root.children){
+            bindBones(i, shaderProgram)
+        }
     }
 
     fun cleanup() {
