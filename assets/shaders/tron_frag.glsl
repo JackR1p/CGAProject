@@ -34,7 +34,6 @@ uniform sampler2D emit;
 uniform sampler2D specular;
 uniform sampler2D diffuse;
 
-uniform vec3 emitcolor;
 
 vec3 emit_col;
 vec3 diff_col;
@@ -66,7 +65,7 @@ void main(){
     // Summe der berechneten Beleuchtungseffekte aller Lichtquellen
     //result += calcPointLight(L, PL0_lightColor, N, V, PL0_constantAttenuation, PL0_linearAttenuation, PL0_quadraticAttenuation, PL0_intensity);
     //result += calcSpotLight(SL_L, vec3(fixed_spotDirection.xyz), SL0_lightColor, N, V, SL0_constantAttenuation, SL0_linearAttenuation, SL0_quadraticAttenuation, SL0_intensity, SL0_outerConeAngle, SL0_innerConeAngle);
-    result += emit_col * emitcolor;
+    result += emit_col;
     result += diff_col * vec3(0.01f);
     color = vec4(result, 1.0);
 }

@@ -160,6 +160,7 @@ object ModelLoader {
     }
 
     fun loadModel(objpath: String, pitch: Float, yaw: Float, roll: Float): Renderable? {
+        val renderable = Renderable()
         val model = load(objpath) ?: return null
         val textures = ArrayList<Texture2D>()
         val materials = ArrayList<Material>()
@@ -197,13 +198,23 @@ object ModelLoader {
                     flattenIndexData(model.meshes[i].indices),
                     vertexAttributes,
                     materials[model.meshes[i].materialIndex]))
+
+            val positions = arrayListOf<Vector3f>()
+
+            for(j in model.meshes[i].vertices.indices){
+                positions.add(model.meshes[i].vertices[j].position.mul(rot))
+            }
+
+            renderable.collider!!.list = positions.toTypedArray()
         }
+        renderable.meshes = meshes
         // assemble the renderable
-        return Renderable(meshes)
+        return renderable
     }
 
     fun loadDAEModel(objPath: String, pitch: Float = 0f, yaw: Float = 0f, roll: Float = 0f): AnimRenderable {
         val meshes = ArrayList<AnimationMesh>()
+        val animRenderable = AnimRenderable()
         try {
             val model = loadDAE(objPath)!!
             val textures = ArrayList<Texture2D>()
@@ -237,18 +248,32 @@ object ModelLoader {
                         Vector2f(1.0f, 1.0f)))
             }
             // meshes
+
+            // supply collider with meshdata for ColliderGeneration
+
+
             for (i in model.meshes.indices) {
                 meshes.add(AnimationMesh(flattenAnimationVertexData(model.meshes[i].vertices, rot),
                         flattenIndexData(model.meshes[i].indices),
                         vertexAttributes,
                         materials[model.meshes[i].materialIndex],
                         model.meshes[i].rootBone))
+
+                val positions = arrayListOf<Vector3f>()
+
+                for(j in model.meshes[i].vertices.indices){
+                    positions.add(model.meshes[i].vertices[j].position.mul(rot))
+                }
+
+                animRenderable.collider!!.list = positions.toTypedArray()
             }
+
         } catch (e: Error) {
             print(e.message)
         }
         // assemble the renderable
-        return AnimRenderable(meshes)
+        animRenderable.meshes = meshes
+        return animRenderable
     }
 
     fun loadDAE(objPath: String): RawAnimationModel? {
@@ -522,4 +547,5 @@ object ModelLoader {
             getRootBone(aiNode, model_string, bones, res)
         }
     }
+
 }

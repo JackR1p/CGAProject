@@ -18,6 +18,23 @@ class Animator(
         applyPose(model!!.meshes[0].rootBone, currentPose, Matrix4f())
     }
 
+    fun playAnimationReverse(name: String, dt: Float) {
+        cur_Animation = animations[name] ?: Animation()
+        progressTimeReverse(dt)
+        val keyframes = getCurrentKeyframes().reversed().toTypedArray()
+        val progression = KeyframeProgress(keyframes)
+        val currentPose = interpolatePoses(keyframes, progression)
+        applyPose(model!!.meshes[0].rootBone, currentPose, Matrix4f())
+    }
+
+    private fun progressTimeReverse(dt: Float) : Double {
+        time -= dt
+        if (time <= 0) {
+            time = cur_Animation.durotation
+        }
+        return time
+    }
+
     private fun progressTime(dt: Float): Double {
         time += dt
         if (time >= cur_Animation.durotation) {

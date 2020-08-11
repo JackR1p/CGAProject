@@ -14,9 +14,9 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class AnimationMesh(
-        vertices: ByteBuffer,
-        indices: IntArray,
-        attributes: Array<VertexAttribute>,
+        var vertices: ByteBuffer,
+        var indices: IntArray,
+        var attributes: Array<VertexAttribute>,
         var material: Material? = null,
         var rootBone : Bone = Bone()
 ) {
