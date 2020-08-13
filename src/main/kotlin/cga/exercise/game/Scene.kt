@@ -61,7 +61,7 @@ class Scene(private val window: GameWindow) {
         human.scaleLocal(Vector3f(0.2f, 0.2f, 0.2f))
         human.shader = anim_shader
         human.animator.animations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/walking.dae")
-        human.rotateLocal(0f, Math.toRadians(180.0).toFloat(), 0f)
+        //human.rotateLocal(0f, Math.toRadians(180.0).toFloat(), 0f)
 
         // Material
 
@@ -161,9 +161,9 @@ class Scene(private val window: GameWindow) {
         val diff_x = xpos_old - xpos
         val diff_y = ypos_old - ypos
 
-        //troncam.rotateAroundPoint(0f, diff_x.toFloat() * 0.002f, 0f, human.getYAxis())
+        troncam.rotateAroundPoint(0f, diff_x.toFloat() * 0.002f, 0f, human.getYAxis())
         //troncam.rotateAroundPoint(diff_y.toFloat() * 0.002f,0f,0f, human.getXAxis())
-        human.rotateLocal(0f, Math.toRadians(diff_x * 0.2).toFloat(), 0f)
+        //human.rotateLocal(0f, Math.toRadians(diff_x * 0.2).toFloat(), 0f)
 
         xpos_old = xpos
         ypos_old = ypos

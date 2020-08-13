@@ -205,7 +205,7 @@ object ModelLoader {
                 positions.add(model.meshes[i].vertices[j].position.mul(rot))
             }
 
-            renderable.collider!!.list = positions.toTypedArray()
+            renderable.collider!!.position = positions.toTypedArray()
         }
         renderable.meshes = meshes
         // assemble the renderable
@@ -265,7 +265,7 @@ object ModelLoader {
                     positions.add(model.meshes[i].vertices[j].position.mul(rot))
                 }
 
-                animRenderable.collider!!.list = positions.toTypedArray()
+                animRenderable.collider!!.position = positions.toTypedArray()
             }
 
         } catch (e: Error) {

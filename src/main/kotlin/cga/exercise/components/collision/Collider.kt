@@ -16,7 +16,8 @@ class Collider(
 ) {
     fun initializeForm(type : Int){
         // TODO: unterscheidung nach Form switch case
-        Collision.setCollisionCube(position.toList())
+        CFGeneration.setQuickhull(position.toList())
+        //Collision.setCollisionCube(position.toList())
 
     }
 

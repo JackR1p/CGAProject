@@ -52,7 +52,7 @@ class AnimationMesh(
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0)
         GL30.glBindVertexArray(0)
-        indexcount = indices.size
+        indexcount = indices.size - 1
     }
 
     fun render() {
