@@ -67,6 +67,7 @@ void main(){
     //result += calcSpotLight(SL_L, vec3(fixed_spotDirection.xyz), SL0_lightColor, N, V, SL0_constantAttenuation, SL0_linearAttenuation, SL0_quadraticAttenuation, SL0_intensity, SL0_outerConeAngle, SL0_innerConeAngle);
     result += emit_col;
     result += diff_col * vec3(0.01f);
+
     color = vec4(result, 1.0);
 }
 

@@ -1,21 +1,21 @@
 package cga.exercise.components.geometry
 
-import cga.exercise.components.collision.Collider
+import cga.exercise.components.collision.Collidable
 import cga.exercise.components.shader.ShaderProgram
 import cga.framework.*
 import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL
 
 // Mesh => Vertices, Polygone usw.
 class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: ShaderProgram? = null, matrix: Matrix4f = Matrix4f(),
                      parent: Transformable? = null,
-                     var animator: Animator = Animator(),
-                     var collider : Collider? = Collider()
-) : IRenderable, Transformable(matrix, parent) {
+                     var animator: Animator = Animator()
+) : IRenderable, Collidable, Transformable(matrix, parent) {
 
     init {
         animator.model = this
+        collider.model = this
     }
 
     override fun render(shaderProgram: ShaderProgram) {
@@ -33,5 +33,12 @@ class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: Sha
         if (window.getKeyState(GLFW.GLFW_KEY_S)) {
             animator.playAnimationReverse("Animation0", dt)
         }
+
     }
+
+    override fun onCollide(normal: Vector3f, obj: Transformable) {
+
+    }
+
+
 }

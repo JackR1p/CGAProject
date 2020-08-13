@@ -1,9 +1,14 @@
 package cga.exercise.components.geometry
 
+import cga.exercise.components.collision.Collider
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import java.util.*
 
-open class Transformable(var matrix: Matrix4f, var parent: Transformable?) : ITransformable {
+open class Transformable(var matrix: Matrix4f, var parent: Transformable?, var collider: Collider = Collider(),
+                         var name: String = "t") : ITransformable {
+
+
     override fun rotateLocal(pitch: Float, yaw: Float, roll: Float) {
         matrix.rotateXYZ(pitch, yaw, roll)
     }
@@ -67,7 +72,7 @@ open class Transformable(var matrix: Matrix4f, var parent: Transformable?) : ITr
 
     override fun getWorldModelMatrix(): Matrix4f {
         val tmp = Matrix4f(matrix)
-        if(parent != null)
+        if (parent != null)
             parent?.getWorldModelMatrix()?.mul(matrix, tmp)
         return tmp
     }
@@ -75,4 +80,5 @@ open class Transformable(var matrix: Matrix4f, var parent: Transformable?) : ITr
     override fun getLocalModelMatrix(): Matrix4f {
         return matrix
     }
+
 }
