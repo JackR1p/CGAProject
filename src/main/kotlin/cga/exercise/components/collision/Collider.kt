@@ -16,7 +16,6 @@ class Collider(
         var linemesh: LineMesh? = null
 ) {
     fun initializeForm() {
-        // TODO: unterscheidung nach Form
         var vertices: MutableList<Float>
         if (type == 0) {
             vertices = getBoundaries()

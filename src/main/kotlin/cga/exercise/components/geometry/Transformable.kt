@@ -1,5 +1,6 @@
 package cga.exercise.components.geometry
 
+import cga.exercise.components.collision.Collidable
 import cga.exercise.components.collision.Collider
 import org.joml.Matrix4f
 import org.joml.Vector3f

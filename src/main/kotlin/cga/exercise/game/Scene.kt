@@ -106,6 +106,9 @@ class Scene(private val window: GameWindow) {
         sceneCtrl.transformables.add(human)
         sceneCtrl.transformables.add(monument)
         sceneCtrl.transformables.add(rend_ground)
+        sceneCtrl.updatable.add(human)
+        sceneCtrl.updatable.add(monument)
+        sceneCtrl.updatable.add(rend_ground)
         sceneCtrl.initialize()
 
         //initial opengl state
@@ -137,10 +140,8 @@ class Scene(private val window: GameWindow) {
     }
 
     fun update(dt: Float, t: Float) {
-        sceneCtrl.update(dt, t)
+        sceneCtrl.update(window, dt, t)
         sceneCtrl.testCollision()
-        human.update(window, dt)
-        // nächste Aufgabe: Kollisionsabfrage => Konzepte => Kollisionsbereich aus Vertices ableiten?
 
         if (window.getKeyState(GLFW.GLFW_KEY_W)) {
             human.translateLocal(Vector3f(0f, 0f, 0.1f))

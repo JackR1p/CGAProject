@@ -1,5 +1,7 @@
 package cga.exercise.components.geometry
 
+import cga.framework.GameWindow
+
 interface Updatable {
-    fun update(dt : Float, t : Float)
+    fun update(gameWindow: GameWindow, dt : Float, t : Float)
 }

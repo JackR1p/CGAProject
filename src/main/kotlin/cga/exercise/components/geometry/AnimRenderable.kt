@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW
 class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: ShaderProgram? = null, matrix: Matrix4f = Matrix4f(),
                      parent: Transformable? = null,
                      var animator: Animator = Animator()
-) : IRenderable, Collidable, Transformable(matrix, parent) {
+) : IRenderable, Collidable, Updatable,Transformable(matrix, parent) {
 
     init {
         animator.model = this
@@ -26,19 +26,17 @@ class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: Sha
     }
 
     // Verhalten des AnimRenderables zur Laufzeit
-    fun update(window: GameWindow, dt: Float) {
-        if (window.getKeyState(GLFW.GLFW_KEY_W)) {
+    override fun update(gameWindow: GameWindow, dt: Float, t: Float) {
+        if (gameWindow.getKeyState(GLFW.GLFW_KEY_W)) {
             animator.playAnimation("Animation0", dt)
         }
-        if (window.getKeyState(GLFW.GLFW_KEY_S)) {
+        if (gameWindow.getKeyState(GLFW.GLFW_KEY_S)) {
             animator.playAnimationReverse("Animation0", dt)
         }
-
     }
 
     override fun onCollide(normal: Vector3f, obj: Transformable) {
 
     }
-
 
 }

@@ -2,12 +2,13 @@ package cga.exercise.components.geometry
 
 import cga.exercise.components.collision.Collidable
 import cga.exercise.components.shader.ShaderProgram
+import cga.framework.GameWindow
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
 // Mesh => Vertices, Polygone usw.
 class Renderable(var meshes: List<Mesh> = listOf(), matrix: Matrix4f = Matrix4f(), parent: Transformable? = null)
-    : IRenderable, Collidable, Transformable(matrix = matrix, parent = parent) {
+    : IRenderable, Collidable, Updatable,Transformable(matrix = matrix, parent = parent) {
 
     init {
         collider.model = this
@@ -26,4 +27,9 @@ class Renderable(var meshes: List<Mesh> = listOf(), matrix: Matrix4f = Matrix4f(
 
     override fun onCollide(normal: Vector3f, obj: Transformable) {
     }
+
+    override fun update(gameWindow: GameWindow, dt: Float, t: Float) {
+
+    }
+
 }

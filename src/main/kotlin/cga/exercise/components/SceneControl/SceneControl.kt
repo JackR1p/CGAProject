@@ -2,19 +2,24 @@ package cga.exercise.components.SceneControl
 
 import cga.exercise.components.camera.Camera
 import cga.exercise.components.geometry.Transformable
+import cga.exercise.components.geometry.Updatable
 import cga.exercise.components.light.Lighting
 import cga.exercise.components.shader.ShaderProgram
+import cga.framework.GameWindow
 import org.joml.AABBf
 import org.joml.Vector3f
 
 class SceneControl(
         val transformables: MutableList<Transformable> = mutableListOf(),
+        val updatable: MutableList<Updatable> = mutableListOf(),
         val lighting: Lighting = Lighting(),
         val camera: List<Camera> = mutableListOf()
 ) {
 
-    fun update(dt : Float, t : Float) {
-
+    fun update(gameWindow: GameWindow, dt: Float, t: Float) {
+        for (i in updatable) {
+            i.update(gameWindow, dt, t)
+        }
     }
 
     fun renderCollisionBoxes(shaderProgram: ShaderProgram) {
