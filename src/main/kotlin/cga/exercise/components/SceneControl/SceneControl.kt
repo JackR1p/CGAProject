@@ -28,26 +28,24 @@ class SceneControl(
         }
     }
 
-    fun testCollision() {
+    fun collision() {
         for (i in transformables) {
-            if (i.collider.aabbf == null && i.collider.spheref == null) {
-                continue
-            }
             // Originale AABBf muss beibehalten werden, da man der JOML AABBf bloß eine Transformationsmatrix übergeben kann
-            val leftAABB = AABBf(i.collider.aabbf!!).transform(i.matrix)
-            for (j in transformables) {
-                if (i == j) {
-                    continue
-                }
-                val rightAABBf = AABBf(j.collider.aabbf!!).transform(j.matrix)
-                if (i.collider.aabbf is AABBf && j.collider.aabbf is AABBf) {
+            if (i.collider.aabbf != null) {
+                i.collider.cur_aabbf = AABBf(i.collider.aabbf!!).translate(i.getWorldPosition())
 
-                    // wie liefert man Normale?
-                    // wenn Collision gefunden, überprüfe auf welcher Plane die Collision stattgefunden hat
-                    // liefer sie zurück
-                    // entscheidung für übergebene Parameter
-                    if (leftAABB.testAABB(rightAABBf)) {
-                        i.collider.onCollide(i.getZAxis(), j)
+                for (j in transformables) {
+                    if (i == j) {
+                        continue
+                    }
+                    j.collider.cur_aabbf = AABBf(j.collider.aabbf!!).translate(j.getWorldPosition())
+                    if (i.collider.cur_aabbf!!.testAABB(j.collider.cur_aabbf)) {
+                        val rightMidPoint = (Vector3f(j.collider.cur_aabbf!!.maxX, j.collider.cur_aabbf!!.maxY, j.collider.cur_aabbf!!.maxZ)
+                                .add(Vector3f(j. collider.cur_aabbf!!.minX, j.collider.cur_aabbf!!.minY, j.collider.cur_aabbf!!.minZ))).div(2f)
+                        val leftMidPoint = (Vector3f(i.collider.cur_aabbf!!.maxX, i.collider.cur_aabbf!!.maxY, i.collider.cur_aabbf!!.maxZ)
+                                .add(Vector3f(i. collider.cur_aabbf!!.minX, i.collider.cur_aabbf!!.minY, i.collider.cur_aabbf!!.minZ))).div(2f)
+                        val direction = leftMidPoint.sub(rightMidPoint)
+                        i.collider.onCollide(j, direction)
                     }
                 }
             }
@@ -56,9 +54,8 @@ class SceneControl(
 
     fun initialize() {
         lighting.initializeLights()
-
         for (i in transformables) {
-            i.collider.initializeForm()
+            i.collider.initializeForm(i)
         }
     }
 

@@ -25,7 +25,8 @@ class Renderable(var meshes: List<Mesh> = listOf(), matrix: Matrix4f = Matrix4f(
 
     }
 
-    override fun onCollide(normal: Vector3f, obj: Transformable) {
+    override fun onCollide(obj: Transformable, direction : Vector3f) {
+
     }
 
     override fun update(gameWindow: GameWindow, dt: Float, t: Float) {

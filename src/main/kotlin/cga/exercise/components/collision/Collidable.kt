@@ -4,5 +4,5 @@ import cga.exercise.components.geometry.Transformable
 import org.joml.Vector3f
 
 interface Collidable {
-    fun onCollide(normal : Vector3f, obj : Transformable)
+    fun onCollide(obj : Transformable, direction : Vector3f)
 }

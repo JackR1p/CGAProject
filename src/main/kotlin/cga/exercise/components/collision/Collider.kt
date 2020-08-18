@@ -7,41 +7,53 @@ import org.joml.*
 import kotlin.properties.ObservableProperty
 
 class Collider(
-        var model : Collidable? = null,
-        var type: Int = 0, // 0 => Cube, 1 => Sphere
+        var model: Collidable? = null,
+        var type: Int = 0, // 0 => Cube, 1 => In X und Z Richtung gleicher (kleinster) Abstand zur Mitte
         var position: Array<Vector3f> = arrayOf(), // rohe vertices des Modells,
         var form: MutableList<Vector3f> = mutableListOf(),
         var aabbf: AABBf? = null, // original AABBf, muss vor dem Benutzen mit der Transformable matrix transformiert werden
-        var spheref: Spheref? = null,
+        var cur_aabbf : AABBf? = null,
+        var midPoint : Vector3f = Vector3f(),
         var linemesh: LineMesh? = null
 ) {
-    fun initializeForm() {
-        var vertices: MutableList<Float>
+    fun initializeForm(transform: Transformable) {
+        getMinMaxVertices()
         if (type == 0) {
-            vertices = getBoundaries()
+            val vertices: MutableList<Float> = getBoundaries()
             aabbf = AABBf(vertices[0], vertices[1], vertices[2], vertices[3], vertices[4], vertices[5])
+            aabbf!!.transform(transform.matrix)
             linemesh = LineMesh(getMinMaxVertices(), intArrayOf(
                     0, 1, 2, 3, 4, 5, 6, 7,
                     0, 4, 1, 5, 2, 6, 3, 7,
                     0, 2, 1, 3, 4, 6, 5, 7))
-        }
-        if (type == 1) {
-            val midpoint = getMidpoint(position)
-            vertices = getBoundaries()
-            val y_comp = vertices[4] - vertices[1]
-            spheref = Spheref(midpoint.x, midpoint.y, midpoint.z, (y_comp / 2))
-        }
+        } else if (type == 1) {
+            // nimm den horizontalen minimalen Abstand von z max Achse und x max Achse
+            // dieser abstand erhält jede horizontaler Eckpunkt zueinander auf der xz Ebene
 
+            val vertices: MutableList<Float> = getBoundaries()
+            val midpoint = getMidpoint()
+            var d = vertices[3] - vertices[0]
+            if (d > vertices[5] - vertices[2]) {
+                d = vertices[5] - vertices[2]
+            }
+            val points = arrayOf(midpoint.x - d, vertices[1], midpoint.z - d, midpoint.x + d, vertices[4], midpoint.z + d)
+            aabbf = AABBf(midpoint.x - d, vertices[1], midpoint.z - d, midpoint.x + d, vertices[4], midpoint.z + d)
+            aabbf!!.transform(transform.matrix)
+            linemesh = LineMesh(toBox(points), intArrayOf(
+                    0, 1, 2, 3, 4, 5, 6, 7,
+                    0, 4, 1, 5, 2, 6, 3, 7,
+                    0, 2, 1, 3, 4, 6, 5, 7))
+        }
     }
 
-    fun getMidpoint(list: Array<Vector3f>): Vector3f {
+    fun getMidpoint(): Vector3f {
         val sum = Vector3f()
 
-        for (i in list) {
+        for (i in form) {
             sum.add(i)
         }
 
-        sum.div(list.size.toFloat())
+        sum.div(form.size.toFloat())
         return sum
     }
 
@@ -135,14 +147,41 @@ class Collider(
         return res
     }
 
-    fun onCollide(normal : Vector3f, obj : Transformable){
-        model!!.onCollide(normal, obj)
+    fun onCollide(obj: Transformable, direction : Vector3f) {
+        model!!.onCollide(obj, direction)
     }
 
     fun render(matrix4f: Matrix4f, shaderProgram: ShaderProgram) {
-        shaderProgram.setUniform("model_matrix", false, matrix4f)
+        val translate = Matrix4f().translate(Vector3f(matrix4f.m30(), matrix4f.m31(), matrix4f.m32()))
+        translate.scale(matrix4f.m11())
+        shaderProgram.setUniform("model_matrix", false, translate)
         if (linemesh != null) {
             linemesh!!.render()
         }
     }
+
+    fun toBox(points: Array<Float>): FloatArray {
+        val vectors = mutableListOf<Vector3f>()
+        val res = FloatArray(3 * 8)
+
+        vectors.add(Vector3f(points[0], points[1], points[2])) // 1
+        vectors.add(Vector3f(points[0], points[4], points[2])) // 2
+        vectors.add(Vector3f(points[0], points[1], points[5])) // 3
+        vectors.add(Vector3f(points[0], points[4], points[5])) // 4
+        vectors.add(Vector3f(points[3], points[1], points[2])) // 5
+        vectors.add(Vector3f(points[3], points[4], points[2])) // 6
+        vectors.add(Vector3f(points[3], points[1], points[5])) // 7
+        vectors.add(Vector3f(points[3], points[4], points[5])) // 8
+
+        form = vectors
+
+        for (i in vectors.indices) {
+            res[i * 3] = vectors[i].x
+            res[i * 3 + 1] = vectors[i].y
+            res[i * 3 + 2] = vectors[i].z
+        }
+
+        return res
+    }
+
 }

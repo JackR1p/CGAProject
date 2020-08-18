@@ -8,7 +8,6 @@ import cga.exercise.components.light.SpotLight
 import cga.exercise.components.shader.ShaderProgram
 import cga.exercise.components.texture.Texture2D
 import cga.framework.*
-import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
@@ -54,8 +53,6 @@ class Scene(private val window: GameWindow) {
 
         // Model muss selbes Rig benutzen wie das loadModel Object (Animation)
         human = ModelLoader.loadDAEModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/human.dae")
-        human.scaleLocal(Vector3f(0.2f, 0.2f, 0.2f))
-        human.translateLocal(Vector3f(0f,2f,0f))
         human.shader = anim_shader
         human.animator.animations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/walking.dae")
         //human.rotateLocal(0f, Math.toRadians(180.0).toFloat(), 0f)
@@ -93,12 +90,14 @@ class Scene(private val window: GameWindow) {
 
         // Collision Forms
 
-        human.collider.type = 0
+        human.collider.type = 1
         human.name = "human"
         monument.collider.type = 0
         monument.name = "monument"
         rend_ground.collider.type = 0
         rend_ground.name = "ground"
+
+        human.scaleLocal(Vector3f(0.2f, 0.2f, 0.2f))
 
         // Initialize Lighting and CollisionForms
         sceneCtrl.lighting.add(sL_1)
@@ -110,6 +109,9 @@ class Scene(private val window: GameWindow) {
         sceneCtrl.updatable.add(monument)
         sceneCtrl.updatable.add(rend_ground)
         sceneCtrl.initialize()
+
+        human.translateGlobal(Vector3f(5f,2f,0f))
+
 
         //initial opengl state
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
@@ -126,7 +128,7 @@ class Scene(private val window: GameWindow) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         shader.use()
         sceneCtrl.lighting.bind(shader)
-        sceneCtrl.renderCollisionBoxes(shader)
+        //sceneCtrl.renderCollisionBoxes(shader)
         //shader.setUniform("emitcolor", Vector3f(0f, 0.75f + sin(t * 2.0).toFloat() / 6, 0.75f + cos(t * 2.0).toFloat() / 6))
         rend_ground.render(shader)
         monument.render(shader)
@@ -141,7 +143,7 @@ class Scene(private val window: GameWindow) {
 
     fun update(dt: Float, t: Float) {
         sceneCtrl.update(window, dt, t)
-        sceneCtrl.testCollision()
+        sceneCtrl.collision()
 
         if (window.getKeyState(GLFW.GLFW_KEY_W)) {
             human.translateLocal(Vector3f(0f, 0f, 0.1f))

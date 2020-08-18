@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW
 class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: ShaderProgram? = null, matrix: Matrix4f = Matrix4f(),
                      parent: Transformable? = null,
                      var animator: Animator = Animator()
-) : IRenderable, Collidable, Updatable,Transformable(matrix, parent) {
+) : IRenderable, Collidable, Updatable, Transformable(matrix, parent) {
 
     init {
         animator.model = this
@@ -35,8 +35,8 @@ class AnimRenderable(var meshes: List<AnimationMesh> = listOf(), var shader: Sha
         }
     }
 
-    override fun onCollide(normal: Vector3f, obj: Transformable) {
-
+    override fun onCollide(obj: Transformable, direction : Vector3f) {
+        matrix.translateLocal(Vector3f(direction.x, 0f, direction.z).mul(0.01f))
     }
 
 }
