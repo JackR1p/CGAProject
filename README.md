@@ -3,8 +3,8 @@
 # Projektname
 CGA_Projekt_AK_JB
 # Teammitglieder
-- Julien Buschbacher
-- Anton Kolesnikov
+- Julien Buschbacher (julien1510)
+- Anton Kolesnikov (JackR1p)
 
 # Featureliste 
 - Skeletal Animation (Julien Buschbacher)
