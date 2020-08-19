@@ -15,3 +15,4 @@ Nicht enthalten, obwohl geplant
 - Deferred Shading
 - Animierte Texturen
 - Advanced Textures
+- POV Kamera
