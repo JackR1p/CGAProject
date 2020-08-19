@@ -21,3 +21,8 @@ Bspw.
 - Skeletal Animation (Julien Buschbacher)
 - Collision Detection (Julien Buschbacher)
 - Automatisierte Berechnung mehrerer Lichtquellen (Julien Buschbacher)
+
+Nicht enthalten
+- Deferred Shading
+- Animierte Texturen
+- Advanced Textures
