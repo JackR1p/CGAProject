@@ -14,15 +14,11 @@ Listen Sie hier noch einmal alle Teammitglieder auf.
 - Anton Kolesnikov
 
 # Featureliste 
-Listen Sie hier alle relevanten Features als Liste mit sinnvoller Reihenfolge auf mit Angabe wer das Feature implementiert hat.
-
-Bspw.
-
 - Skeletal Animation (Julien Buschbacher)
 - Collision Detection (Julien Buschbacher)
 - Automatisierte Berechnung mehrerer Lichtquellen (Julien Buschbacher)
 
-Nicht enthalten
+Nicht enthalten, obwohl geplant
 - Deferred Shading
 - Animierte Texturen
 - Advanced Textures
