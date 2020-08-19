@@ -7,12 +7,8 @@ import cga.exercise.components.geometry.*
 import cga.exercise.components.light.PointLight
 import cga.exercise.components.light.SpotLight
 import cga.exercise.components.shader.ShaderProgram
-import cga.exercise.components.texture.Texture2D
 import cga.framework.*
-import org.joml.Matrix4f
-import org.joml.Vector2f
 import org.joml.Vector3f
-import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
 
 /**
@@ -23,8 +19,7 @@ class Scene(private val window: GameWindow) {
     val sceneCtrl = SceneControl()
 
     // TODO: Set static Variable for LightsourceCount or BoneCount
-    private val shader: ShaderProgram = ShaderProgram("assets/shaders/tron_vert.glsl", "assets/shaders/tron_frag.glsl")
-    private val anim_shader: ShaderProgram = ShaderProgram("assets/shaders/anim_vert.glsl", "assets/shaders/tron_frag.glsl")
+    private val shader: ShaderProgram = ShaderProgram("assets/shaders/vert.glsl", "assets/shaders/frag.glsl")
 
     // Models
     var rend_ground: Renderable
@@ -53,13 +48,10 @@ class Scene(private val window: GameWindow) {
 
         monument = ModelLoader.loadModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Monument.obj", 0f, 0f, 0f)!!
 
-
-        //playermodel.scaleLocal(Vector3f(0.8f, 0.8f, 0.8f))
-
         // Model muss selbes Rig benutzen wie das loadModel Object (Animation)
         human = ModelLoader.loadDAEModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/human.dae")
         player = Player(human)
-        player.shader = anim_shader
+        player.shader = shader
         player.animator.animations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/walking.dae")
 
         rend_ground = ModelLoader.loadModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/dirt.obj", 0f, 0f, 0f)!!
@@ -115,42 +107,17 @@ class Scene(private val window: GameWindow) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         shader.use()
         shader.setUniform("darkness_modifier", darkness_modifier)
-        sceneCtrl.lighting.bind(shader)
         //sceneCtrl.renderCollisionBoxes(shader)
-
-        // Shader Objects
         rend_ground.render(shader)
         monument.render(shader)
         troncam.bind(shader)
-
-        anim_shader.use()
-        anim_shader.setUniform("darkness_modifier", darkness_modifier)
-        sceneCtrl.lighting.bind(anim_shader)
-        troncam.bind(anim_shader)
-
-        // Animation Shader Objects
-        player.render(anim_shader)
+        sceneCtrl.lighting.bind(shader)
+        player.render(shader)
     }
 
     fun update(dt: Float, t: Float) {
         sceneCtrl.update(window, dt, t)
         sceneCtrl.collision()
-
-        if (window.getKeyState(GLFW.GLFW_KEY_W)) {
-            player.translateLocal(Vector3f(0f, 0f, 0.1f))
-        }
-
-        if (window.getKeyState(GLFW.GLFW_KEY_A)) {
-            player.rotateLocal(0f, Math.toRadians(90.0).toFloat() * dt, 0f)
-        }
-
-        if (window.getKeyState(GLFW.GLFW_KEY_D)) {
-            player.rotateLocal(0f, Math.toRadians(-90.0).toFloat() * dt, 0f)
-        }
-
-        if (window.getKeyState(GLFW.GLFW_KEY_S)) {
-            player.translateLocal(Vector3f(0f, 0f, -0.1f))
-        }
     }
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {}
@@ -160,8 +127,8 @@ class Scene(private val window: GameWindow) {
         val diff_y = ypos_old - ypos
 
         troncam.rotateAroundPoint(0f, diff_x.toFloat() * 0.002f, 0f, player.getYAxis())
-        //troncam.rotateAroundPoint(diff_y.toFloat() * 0.002f,0f,0f, human.getXAxis())
-        //human.rotateLocal(0f, Math.toRadians(diff_x * 0.2).toFloat(), 0f)
+        //troncam.rotateAroundPoint(diff_y.toFloat() * 0.002f,0f,0f, player.getXAxis())
+        //player.rotateLocal(0f, Math.toRadians(diff_x * 0.2).toFloat(), 0f)
 
         xpos_old = xpos
         ypos_old = ypos
@@ -169,6 +136,5 @@ class Scene(private val window: GameWindow) {
 
     fun cleanup() {
         shader.cleanup()
-        anim_shader.cleanup()
     }
 }
