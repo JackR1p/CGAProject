@@ -1,6 +1,6 @@
 #version 330 core
 #define LIGHTS_NUM 2
-
+#pragma optionNV unroll all
 //input from vertex shader
 in struct VertexData
 {
@@ -39,6 +39,8 @@ vec3 emit_col;
 vec3 diff_col;
 vec3 spec_col;
 
+uniform float darkness_modifier;
+
 //fragment shader output
 out vec4 color;
 
@@ -59,15 +61,11 @@ void main(){
     vec3 result = vec3(0, 0, 0);
     for (int i = 0; i < LIGHTS_NUM; i++){
         result += calcPointLight(lights[i].lc_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].inner);
-        result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
+        //result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
     }
 
-    // Summe der berechneten Beleuchtungseffekte aller Lichtquellen
-    //result += calcPointLight(L, PL0_lightColor, N, V, PL0_constantAttenuation, PL0_linearAttenuation, PL0_quadraticAttenuation, PL0_intensity);
-    //result += calcSpotLight(SL_L, vec3(fixed_spotDirection.xyz), SL0_lightColor, N, V, SL0_constantAttenuation, SL0_linearAttenuation, SL0_quadraticAttenuation, SL0_intensity, SL0_outerConeAngle, SL0_innerConeAngle);
-    result += emit_col;
-    result += diff_col * vec3(0.01f);
-
+    result += emit_col * darkness_modifier;
+    result += diff_col * 0.01f;
     color = vec4(result, 1.0);
 }
 

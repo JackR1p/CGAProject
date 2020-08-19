@@ -1,5 +1,6 @@
 #version 330 core
 #define LIGHTS_NUM 2
+#pragma optionNV unroll all
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 tc;
@@ -74,10 +75,16 @@ void main(){
 
     vec4 P = view * pos;
 
+    vec3 spot_dir = vec3(0,0,0);
+    mat4 invTransView = inverse(transpose(view));
+
+
     for (int i = 0; i < LIGHTS_NUM; i++){
         lightsource = view * vec4(lights[i].position, 1);
         lights[i].lc_dir = (lightsource - P).xyz;
-        lights[i].spot_dir = (inverse(transpose(view)) * vec4(lights[i].spot_dir, 1)).xyz;
+
+        spot_dir = (invTransView * vec4(lights[i].spot_dir, 1)).xyz;
+        lights[i].spot_dir = spot_dir;
     }
 
     Light_Camera_Direction = -P.xyz;

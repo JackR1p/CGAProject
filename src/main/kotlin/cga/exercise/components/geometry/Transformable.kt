@@ -7,7 +7,7 @@ import org.joml.Vector3f
 import java.util.*
 
 open class Transformable(var matrix: Matrix4f, var parent: Transformable?, var collider: Collider = Collider(),
-                         var name: String = "t") : ITransformable {
+                         var name: String = "${Math.random()}") : ITransformable {
 
 
     override fun rotateLocal(pitch: Float, yaw: Float, roll: Float) {
