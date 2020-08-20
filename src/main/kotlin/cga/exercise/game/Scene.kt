@@ -36,6 +36,7 @@ class Scene(private val window: GameWindow) {
     var pL_1: PointLight
     var sL_1: SpotLight
     var pL_2 : PointLight
+    var pL_3 : PointLight
 
     // vars
     var xpos_old: Double
@@ -47,24 +48,25 @@ class Scene(private val window: GameWindow) {
         xpos_old = 0.0
         ypos_old = 0.0
 
-        monument = ModelLoader.loadModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Monument.obj", 0f, 0f, 0f)!!
+        monument = ModelLoader.loadModel("../CGAFramework/assets/models/Monument.obj", 0f, 0f, 0f)!!
 
         // Model muss selbes Rig benutzen wie das loadModel Object (Animation)
-        human = ModelLoader.loadDAEModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/human.dae")
+        human = ModelLoader.loadDAEModel("../CGAFramework/assets/models/human.dae")
         player = Player(human)
         player.shader = shader
-        player.animator.animations = ModelLoader.loadAnimations("C:/Users/Julien/dev/cga/CGAFramework/assets/models/Animations/walking.dae")
+        player.animator.animations = ModelLoader.loadAnimations("../CGAFramework/assets/models/Animations/walking.dae")
 
-        rend_ground = ModelLoader.loadModel("C:/Users/Julien/dev/cga/CGAFramework/assets/models/dirt.obj", 0f, 0f, 0f)!!
+        rend_ground = ModelLoader.loadModel("../CGAFramework/assets/models/dirt.obj", 0f, 0f, 0f)!!
 
         // Lighting
 
-        pL_2 = PointLight(Vector3f(10f, 10f, 0f), Vector3f(1f, 1f, 1f), rend_ground)
-        pL_1 = PointLight(Vector3f(0f, 50f, 0f), Vector3f(1f, 1f, 1f), rend_ground)
+        pL_3 = PointLight(Vector3f(10f, 5f, -10f), Vector3f(1f, 0.5f, 0f), rend_ground)
+        pL_2 = PointLight(Vector3f(10f, 5f, 0f), Vector3f(0.5f, 0.5f, 1f), rend_ground)
+        pL_1 = PointLight(Vector3f(0f, 5f, 10f), Vector3f(1f, 1f, 1f), rend_ground)
         sL_1 = SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1f, 1f, 1f), player, 20f, 30f)
         sL_1.intensity = 5f
-        pL_1.intensity = 30f
-        //pL_2.intensity = 3f
+        pL_1.intensity = 5f
+        pL_2.intensity = 3f
 
         // Camera
 
@@ -86,7 +88,8 @@ class Scene(private val window: GameWindow) {
         // Initialize Lighting and CollisionForms
         sceneCtrl.lighting.add(sL_1)
         sceneCtrl.lighting.add(pL_1)
-        //sceneCtrl.lighting.add(pL_2)
+        sceneCtrl.lighting.add(pL_2)
+        sceneCtrl.lighting.add(pL_3)
         sceneCtrl.transformables.add(player)
         sceneCtrl.transformables.add(monument)
         sceneCtrl.transformables.add(rend_ground)

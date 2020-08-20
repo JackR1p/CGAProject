@@ -1,7 +1,7 @@
 #version 330 core
-#define LIGHTS_NUM 2
-#pragma optionNV unroll all
-//input from vertex shader
+#define LIGHTS_NUM 4
+//#pragma optionNV unroll all
+
 in struct VertexData
 {
     vec3 position;
@@ -11,14 +11,15 @@ in struct VertexData
 
 in vec3 Light_Camera_Direction;
 
+float c_att = 1f;
+float l_att = 0.5f;
+float q_att = 0.01f;
+
 struct Light {
     vec3 position;
     vec3 color;
     vec3 lc_dir;// Light Camera Direction
     float intensity;
-    float c_att;
-    float l_att;
-    float q_att;
     float inner;
     float outer;
     vec3 spot_dir;
@@ -59,8 +60,8 @@ void main(){
 
     vec3 result = vec3(0, 0, 0);
     for (int i = 0; i < LIGHTS_NUM; i++){
-        result += calcPointLight(lights[i].lc_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].inner);
-        result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
+        result += calcPointLight(lights[i].lc_dir, lights[i].color, N, V, c_att, l_att, q_att, lights[i].intensity, lights[i].inner);
+        result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, c_att, l_att, q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
     }
 
     result += emit_col * darkness_modifier;

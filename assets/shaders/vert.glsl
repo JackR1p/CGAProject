@@ -1,5 +1,5 @@
 #version 330 core
-#define LIGHTS_NUM 2
+#define LIGHTS_NUM 4
 #define BONE_NUM 22
 #pragma optionNV unroll all
 
@@ -35,9 +35,6 @@ out struct Light {
     vec3 color;
     vec3 lc_dir;// Light Camera Direction
     float intensity;
-    float c_att;
-    float l_att;
-    float q_att;
     float inner;
     float outer;
     vec3 spot_dir;

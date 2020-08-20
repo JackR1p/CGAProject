@@ -49,9 +49,6 @@ class Lighting {
             shader.setUniform("Lights[$i].position", x.getWorldPosition())
             shader.setUniform("Lights[$i].color", x.color)
             shader.setUniform("Lights[$i].intensity", x.intensity)
-            shader.setUniform("Lights[$i].c_att", x.constantAttenuation)
-            shader.setUniform("Lights[$i].l_att", x.linearAttenuation)
-            shader.setUniform("Lights[$i].q_att", x.quadraticAttenuation)
             i++
         }
 
@@ -59,9 +56,6 @@ class Lighting {
             shader.setUniform("Lights[$i].position", x.getWorldPosition())
             shader.setUniform("Lights[$i].color", x.color)
             shader.setUniform("Lights[$i].intensity", x.intensity)
-            shader.setUniform("Lights[$i].c_att", x.constantAttenuation)
-            shader.setUniform("Lights[$i].l_att", x.linearAttenuation)
-            shader.setUniform("Lights[$i].q_att", x.quadraticAttenuation)
             shader.setUniform("Lights[$i].inner", cos(Math.toRadians(x.innerConeAngle.toDouble())).toFloat())
             shader.setUniform("Lights[$i].outer", cos(Math.toRadians(x.outerConeAngle.toDouble())).toFloat())
             shader.setUniform("Lights[$i].spot_dir", x.parent!!.getZAxis())
