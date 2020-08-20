@@ -11,7 +11,7 @@ in struct VertexData
 
 in vec3 Light_Camera_Direction;
 
-float c_att = 1f;
+float c_att = 1.0f;
 float l_att = 0.5f;
 float q_att = 0.01f;
 
@@ -39,6 +39,8 @@ vec3 emit_col;
 vec3 diff_col;
 vec3 spec_col;
 
+uniform int toon;
+
 uniform float darkness_modifier;
 
 //fragment shader output
@@ -48,15 +50,17 @@ out vec4 color;
 vec3 calcPointLight(vec3 Light_Direction, vec3 Light_Color, vec3 Normal, vec3 View_Direction, float c_att, float l_att, float q_att, float intensity, float boolean);
 vec3 calcSpotLight(vec3 Light_Direction, vec3 Spot_Direction, vec3 Light_Color, vec3 Normal, vec3 View_Direction, float c_att, float l_att, float q_att, float intensity, float outerAngle, float innerAngle);
 
+const float levels = 3.0f;
+
 void main(){
 
     vec3 N = normalize(vertexData.normal);
     vec3 V = normalize(Light_Camera_Direction);
 
     // Texturen
-    emit_col = texture2D(emit, vertexData.tc).rgb;
-    diff_col = texture2D(specular, vertexData.tc).rgb;
-    spec_col = texture2D(diffuse, vertexData.tc).rgb;
+    emit_col = texture(emit, vertexData.tc).rgb;
+    diff_col = texture(specular, vertexData.tc).rgb;
+    spec_col = texture(diffuse, vertexData.tc).rgb;
 
     vec3 result = vec3(0, 0, 0);
     for (int i = 0; i < LIGHTS_NUM; i++){
@@ -64,8 +68,17 @@ void main(){
         result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, c_att, l_att, q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
     }
 
+
+
     result += emit_col * darkness_modifier;
     result += diff_col * 0.01f;
+
+    //float levelx = floor(result.x * levels);
+    //float levely = floor(result.y * levels);
+    //float levelz = floor(result.z * levels);
+    //vec3 tempresult = vec3(levelx/levels, levely/levels, levelz/levels);
+    //result = tempresult;
+
     color = vec4(result, 1.0);
 }
 
@@ -74,6 +87,9 @@ vec3 calcPointLight(vec3 Light_Direction, vec3 Light_Color, vec3 Normal, vec3 Vi
     if (boolean != 0){
         return vec3(0, 0, 0);
     }
+
+    //float level = floor(intensity * levels);
+    //intensity = level / levels;
 
     float Light_Distance = length(Light_Direction);
     Light_Direction = normalize(Light_Direction);
@@ -86,6 +102,11 @@ vec3 calcPointLight(vec3 Light_Direction, vec3 Light_Color, vec3 Normal, vec3 Vi
 
     // cos^k beta
     float beta = pow(max(0, dot(View_Direction, R)), shininess);
+
+    if(toon == 1){
+        float level = floor(alpha * levels);
+        alpha = level / levels;
+    }
 
     // diffuser Term
     vec3 diff_term = diff_col * alpha * intensity;
@@ -109,6 +130,9 @@ vec3 calcSpotLight(vec3 Light_Direction, vec3 Spot_Direction, vec3 Light_Color, 
         return vec3(0, 0, 0);
     }
 
+
+    //float level = floor(intensity / levels);
+    //intensity = level / levels;
     // Selber Code wie in Spotlight (Berechnung der Phong Komponenten + Attenuation)
     float Light_Distance = length(Light_Direction);
     Light_Direction = normalize(Light_Direction);
@@ -127,8 +151,13 @@ vec3 calcSpotLight(vec3 Light_Direction, vec3 Spot_Direction, vec3 Light_Color, 
         SpotIntensity = 0;
     }
 
-    vec3 diff_term = diff_col * alpha * intensity * SpotIntensity;
-    vec3 spec_term = spec_col * beta * intensity * SpotIntensity;
+    if(toon == 1){
+        float level = floor(alpha * levels);
+        alpha = level / levels;
+    }
+
+    vec3 diff_term = diff_col * alpha * intensity  * SpotIntensity;
+    vec3 spec_term = spec_col * beta * intensity  * SpotIntensity;
 
     vec3 result = diff_term;
     result += spec_term;

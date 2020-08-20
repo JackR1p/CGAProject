@@ -9,6 +9,7 @@ import cga.exercise.components.light.SpotLight
 import cga.exercise.components.shader.ShaderProgram
 import cga.framework.*
 import org.joml.Vector3f
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
 
 /**
@@ -26,6 +27,8 @@ class Scene(private val window: GameWindow) {
     var human: AnimRenderable
     var player: Player
     var monument: Renderable
+    //var cottageObj: Renderable
+    var sphere: Renderable
 
     val darkness_modifier = 0.1f
 
@@ -49,6 +52,8 @@ class Scene(private val window: GameWindow) {
         ypos_old = 0.0
 
         monument = ModelLoader.loadModel("../CGAFramework/assets/models/Monument.obj", 0f, 0f, 0f)!!
+        //cottageObj = ModelLoader.loadModel("../CGAFramework/assets/models/cottageObj.obj", 0f, 0f, 0f)!!
+        sphere = ModelLoader.loadModel("../CGAFramework/assets/models/sphere.obj", 0f, 0f, 0f)!!
 
         // Model muss selbes Rig benutzen wie das loadModel Object (Animation)
         human = ModelLoader.loadDAEModel("../CGAFramework/assets/models/human.dae")
@@ -82,6 +87,10 @@ class Scene(private val window: GameWindow) {
         monument.name = "monument"
         rend_ground.collider.type = 0
         rend_ground.name = "ground"
+        //cottageObj.collider.type = 0
+        //cottageObj.name = "cottageObj"
+        sphere.collider.type = 0
+        sphere.name = "sphere"
 
         player.scaleLocal(Vector3f(0.2f, 0.2f, 0.2f))
 
@@ -92,16 +101,20 @@ class Scene(private val window: GameWindow) {
         sceneCtrl.lighting.add(pL_3)
         sceneCtrl.transformables.add(player)
         sceneCtrl.transformables.add(monument)
+        //sceneCtrl.transformables.add(cottageObj)
         sceneCtrl.transformables.add(rend_ground)
+        sceneCtrl.transformables.add(sphere)
         sceneCtrl.updatable.add(player)
         sceneCtrl.updatable.add(monument)
         sceneCtrl.updatable.add(rend_ground)
+        //sceneCtrl.updatable.add(cottageObj)
+        sceneCtrl.updatable.add(sphere)
         sceneCtrl.initialize()
 
         player.translateGlobal(Vector3f(5f, 0.4f, 0f))
 
         //initial opengl state
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+        glClearColor(0.2353f, 0.5176f, 0.6549f, 1.0f)
         GLError.checkThrow()
         glDisable(GL_CULL_FACE); GLError.checkThrow()
         glFrontFace(GL_CCW); GLError.checkThrow()
@@ -118,6 +131,8 @@ class Scene(private val window: GameWindow) {
         rend_ground.render(shader)
         monument.render(shader)
         troncam.bind(shader)
+        //cottageObj.render(shader)
+        sphere.render(shader)
         sceneCtrl.lighting.bind(shader)
         player.render(shader)
     }
@@ -125,6 +140,9 @@ class Scene(private val window: GameWindow) {
     fun update(dt: Float, t: Float) {
         sceneCtrl.update(window, dt, t)
         sceneCtrl.collision()
+        if(window.getKeyState(GLFW.GLFW_KEY_C))
+        {
+        }
     }
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {}
