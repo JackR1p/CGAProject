@@ -35,6 +35,7 @@ class Scene(private val window: GameWindow) {
     // Lights
     var pL_1: PointLight
     var sL_1: SpotLight
+    var pL_2 : PointLight
 
     // vars
     var xpos_old: Double
@@ -58,10 +59,12 @@ class Scene(private val window: GameWindow) {
 
         // Lighting
 
+        pL_2 = PointLight(Vector3f(10f, 10f, 0f), Vector3f(1f, 1f, 1f), rend_ground)
         pL_1 = PointLight(Vector3f(0f, 50f, 0f), Vector3f(1f, 1f, 1f), rend_ground)
-        sL_1 = SpotLight(Vector3f(0f, 0.5f, 0f), Vector3f(1f, 1f, 1f), player, 20f, 30f)
+        sL_1 = SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1f, 1f, 1f), player, 20f, 30f)
         sL_1.intensity = 5f
-        pL_1.intensity = 20f
+        pL_1.intensity = 30f
+        //pL_2.intensity = 3f
 
         // Camera
 
@@ -83,6 +86,7 @@ class Scene(private val window: GameWindow) {
         // Initialize Lighting and CollisionForms
         sceneCtrl.lighting.add(sL_1)
         sceneCtrl.lighting.add(pL_1)
+        //sceneCtrl.lighting.add(pL_2)
         sceneCtrl.transformables.add(player)
         sceneCtrl.transformables.add(monument)
         sceneCtrl.transformables.add(rend_ground)
@@ -107,7 +111,7 @@ class Scene(private val window: GameWindow) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         shader.use()
         shader.setUniform("darkness_modifier", darkness_modifier)
-        //sceneCtrl.renderCollisionBoxes(shader)
+        sceneCtrl.renderCollisionBoxes(shader)
         rend_ground.render(shader)
         monument.render(shader)
         troncam.bind(shader)

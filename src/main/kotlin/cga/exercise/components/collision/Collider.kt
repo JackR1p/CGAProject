@@ -10,11 +10,10 @@ class Collider(
         var model: Collidable? = null,
         var type: Int = 0, // 0 => Cube, 1 => In X und Z Richtung gleicher (kleinster) Abstand zur Mitte
         var position: Array<Vector3f> = arrayOf(), // rohe vertices des Modells,
-        var form: MutableList<Vector3f> = mutableListOf(),
+        var form: MutableList<Vector3f> = mutableListOf(), // form der AABB
         var aabbf: AABBf? = null, // original AABBf, muss vor dem Benutzen mit der Transformable matrix transformiert werden
-        var cur_aabbf : AABBf? = null,
-        var midPoint : Vector3f = Vector3f(),
-        var linemesh: LineMesh? = null
+        var cur_aabbf : AABBf? = null, // transformierte AABB
+        var linemesh: LineMesh? = null // gerenderte AABB zum Debuggen
 ) {
     fun initializeForm(transform: Transformable) {
         getMinMaxVertices()
@@ -151,6 +150,7 @@ class Collider(
         model!!.onCollide(obj, direction)
     }
 
+    // Debug
     fun render(matrix4f: Matrix4f, shaderProgram: ShaderProgram) {
         val translate = Matrix4f().translate(Vector3f(matrix4f.m30(), matrix4f.m31(), matrix4f.m32()))
         translate.scale(matrix4f.m11())

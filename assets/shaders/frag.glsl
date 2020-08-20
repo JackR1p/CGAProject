@@ -34,7 +34,6 @@ uniform sampler2D emit;
 uniform sampler2D specular;
 uniform sampler2D diffuse;
 
-
 vec3 emit_col;
 vec3 diff_col;
 vec3 spec_col;
@@ -61,7 +60,7 @@ void main(){
     vec3 result = vec3(0, 0, 0);
     for (int i = 0; i < LIGHTS_NUM; i++){
         result += calcPointLight(lights[i].lc_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].inner);
-        //result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
+        result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, lights[i].c_att, lights[i].l_att, lights[i].q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
     }
 
     result += emit_col * darkness_modifier;
