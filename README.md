@@ -10,6 +10,7 @@ CGA_Projekt_AK_JB
 - Skeletal Animation (Julien Buschbacher)
 - Collision Detection (Julien Buschbacher)
 - Automatisierte Berechnung mehrerer Lichtquellen (Julien Buschbacher)
+- Toon Shader (Anton Kolesnikov)
 
 Nicht enthalten, obwohl geplant
 - Deferred Shading
