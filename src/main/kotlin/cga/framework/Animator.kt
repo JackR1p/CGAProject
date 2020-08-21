@@ -44,7 +44,6 @@ class Animator(
     }
 
     fun applyPose(node: Bone, pose: Map<String, JointTransform>, parentMatrix: Matrix4f) {
-
         // animateMatrix => finalResult
         // Die Transformation der Knochen im Weltkoordinatensystem
         // node.offset: transformiert vom node Space in den Ursprung des Meshes

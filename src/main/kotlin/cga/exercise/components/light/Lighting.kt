@@ -5,9 +5,9 @@ import kotlin.math.cos
 
 class Lighting {
 
-    var lightings: MutableList<PointLight> = mutableListOf<PointLight>()
-    var pointlights: MutableList<PointLight> = mutableListOf<PointLight>()
-    var spotlights: MutableList<SpotLight> = mutableListOf<SpotLight>()
+    var lightings: MutableList<PointLight> = mutableListOf()
+    var pointlights: MutableList<PointLight> = mutableListOf()
+    var spotlights: MutableList<SpotLight> = mutableListOf()
     var count = 0
 
     fun initializeLights() {

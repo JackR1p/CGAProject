@@ -58,9 +58,9 @@ void main(){
     vec3 V = normalize(Light_Camera_Direction);
 
     // Texturen
-    emit_col = texture(emit, vertexData.tc).rgb;
-    diff_col = texture(specular, vertexData.tc).rgb;
-    spec_col = texture(diffuse, vertexData.tc).rgb;
+    emit_col = texture2D(emit, vertexData.tc).rgb;
+    diff_col = texture2D(specular, vertexData.tc).rgb;
+    spec_col = texture2D(diffuse, vertexData.tc).rgb;
 
     vec3 result = vec3(0, 0, 0);
     for (int i = 0; i < LIGHTS_NUM; i++){
@@ -68,16 +68,8 @@ void main(){
         result += calcSpotLight(lights[i].lc_dir, lights[i].spot_dir, lights[i].color, N, V, c_att, l_att, q_att, lights[i].intensity, lights[i].outer, lights[i].inner);
     }
 
-
-
     result += emit_col * darkness_modifier;
     result += diff_col * 0.01f;
-
-    //float levelx = floor(result.x * levels);
-    //float levely = floor(result.y * levels);
-    //float levelz = floor(result.z * levels);
-    //vec3 tempresult = vec3(levelx/levels, levely/levels, levelz/levels);
-    //result = tempresult;
 
     color = vec4(result, 1.0);
 }
@@ -88,16 +80,13 @@ vec3 calcPointLight(vec3 Light_Direction, vec3 Light_Color, vec3 Normal, vec3 Vi
         return vec3(0, 0, 0);
     }
 
-    //float level = floor(intensity * levels);
-    //intensity = level / levels;
-
     float Light_Distance = length(Light_Direction);
     Light_Direction = normalize(Light_Direction);
 
     // Vektor des am Fragment reflektierten Licheinfallsvektors
     vec3 R = normalize(reflect(-Light_Direction, Normal));
 
-    // Winkel zwischen Licht-Einfallsvektor und Normalen => alpha
+    // Winkel zwischen Licht-Einfallsvektor und Normalen
     float alpha = max(0.0, dot(Light_Direction, Normal));
 
     // cos^k beta
@@ -129,7 +118,6 @@ vec3 calcSpotLight(vec3 Light_Direction, vec3 Spot_Direction, vec3 Light_Color, 
     if (innerAngle == 0) {
         return vec3(0, 0, 0);
     }
-
 
     //float level = floor(intensity / levels);
     //intensity = level / levels;

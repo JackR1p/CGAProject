@@ -34,7 +34,6 @@ class SceneControl(
             // Originale AABBf muss beibehalten werden, da man der JOML AABBf bloß eine Transformationsmatrix übergeben kann
             if (i.collider.aabbf != null) {
                 i.collider.cur_aabbf = AABBf(i.collider.aabbf!!).translate(i.getWorldPosition())
-
                 for (j in transformables) {
                     if (i == j) {
                         continue

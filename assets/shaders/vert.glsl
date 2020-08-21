@@ -14,7 +14,6 @@ layout(location = 4) in vec4 weight;
 // Animation
 uniform mat4 Bones[BONE_NUM];
 
-// translation object to world
 uniform mat4 model_matrix;
 uniform mat4 view;
 uniform mat4 proj;
@@ -71,14 +70,12 @@ void main(){
     vertexData.tc = tc * tcMultiplier;
 
     // Transformations
-    // needbonetransform
     vec4 pos = model_matrix * boneTransform * vec4(position, 1.0f);
 
     // model view
     mat4 mv_mat = view * model_matrix;
 
     // Normal in Camera Perspective Transformation
-    // needbonetransform
     vertexData.normal = (inverse(transpose(mv_mat)) * boneTransform * vec4(normal, 1.0f)).xyz;
 
     vertexData.position = pos.xyz;
