@@ -31,6 +31,7 @@ class Scene(private val window: GameWindow) {
     var sphere: Renderable
 
     val darkness_modifier = 0.1f
+    var toon = 0;
 
     // camera
     var troncam: Camera
@@ -127,6 +128,7 @@ class Scene(private val window: GameWindow) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         shader.use()
         shader.setUniform("darkness_modifier", darkness_modifier)
+        shader.setUniform("toon", toon)
         sceneCtrl.renderCollisionBoxes(shader)
         rend_ground.render(shader)
         monument.render(shader)
@@ -140,10 +142,12 @@ class Scene(private val window: GameWindow) {
     fun update(dt: Float, t: Float) {
         sceneCtrl.update(window, dt, t)
         sceneCtrl.collision()
-        if(window.getKeyState(GLFW.GLFW_KEY_C))
-        {
+        if(window.getKeyState(GLFW.GLFW_KEY_C)){
+            toon = 1;
+        }else {
+            toon = 0;
         }
-    }
+        }
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {}
 
